@@ -3,13 +3,17 @@ package org.shop.sportwebstore.model.entity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.shop.sportwebstore.model.Roles;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "users")
 public class User {
     private String id;
