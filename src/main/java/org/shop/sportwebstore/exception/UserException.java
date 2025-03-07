@@ -1,6 +1,6 @@
 package org.shop.sportwebstore.exception;
 
-public class UserException extends RuntimeException{
+public class UserException extends ShopException {
     public UserException(String message) {
         super(message);
     }

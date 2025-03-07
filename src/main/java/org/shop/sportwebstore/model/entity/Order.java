@@ -29,6 +29,7 @@ public class Order {
     private OrderStatus status = OrderStatus.CREATED;
     private String orderAddress;
     private Date orderDate;
+    private Date deliveryDate;
 
     public Order(Map<String, Integer> products, String userId) {
         this.products = products;

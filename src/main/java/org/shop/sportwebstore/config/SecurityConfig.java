@@ -5,6 +5,7 @@ import org.shop.sportwebstore.service.JwtRequestFilter;
 import org.shop.sportwebstore.service.UserDetailsImplService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -40,11 +41,22 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .formLogin((form) -> form
+                .exceptionHandling((exception) -> exception
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.getWriter().write("Access Denied: You are not authorized to access this resource.");
+                        })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.getWriter().write("Unauthorized: Please provide valid credentials.");
+                        })
+                )
+                .formLogin(form -> form
                         .loginPage("/login")
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);
+
         return http.build();
     }
 

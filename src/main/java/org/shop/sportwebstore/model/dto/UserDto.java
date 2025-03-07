@@ -1,6 +1,8 @@
 package org.shop.sportwebstore.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -26,6 +28,12 @@ public class UserDto {
     private String shippingAddress;
     private Roles role;
 
+    @AssertTrue(message = "Passwords must match.")
+    @JsonIgnore
+    public boolean isPasswordMatching() {
+        return password != null && password.equals(confirmPassword);
+    }
+
     public static User toUserEntity(UserDto userDto) {
         return User.builder()
                 .email(userDto.getEmail())
@@ -35,7 +43,7 @@ public class UserDto {
 
     public static Customer toCustomerEntity(UserDto userDto, User user) {
         return Customer.builder()
-                .user(user)
+                .userId(user.getId())
                 .firstName(userDto.getFirstName())
                 .lastName(userDto.getLastName())
                 .shippingAddress(userDto.getShippingAddress())
@@ -49,13 +57,13 @@ public class UserDto {
                 .build();
     }
 
-    public static UserDto toCustomerDto(Customer customer) {
+    public static UserDto toCustomerDto(Customer customer, User user) {
         return UserDto.builder()
-                .email(customer.getUser().getEmail())
+                .email(user.getEmail())
                 .firstName(customer.getFirstName())
                 .lastName(customer.getLastName())
                 .shippingAddress(customer.getShippingAddress())
-                .role(customer.getUser().getRole())
+                .role(user.getRole())
                 .build();
     }
 }

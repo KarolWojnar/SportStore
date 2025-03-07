@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +24,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final UserDetailsImplService userDetailsService;
     private final JwtUtil jwtUtil;
+    @Value("${jwt.exp}")
+    private int exp;
 
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request,
@@ -32,33 +35,47 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         String token = null;
         String username = null;
+        String refreshToken = null;
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
-        } else {
+
             try {
-                if (cookies != null) {
-                    for (Cookie cookie : cookies) {
-                        if ("Authorization".equals(cookie.getName())) {
-                            token = cookie.getValue();
-                            username = jwtUtil.extractUsername(token);
-                            break;
-                        }
-                    }
-                }
+                username = jwtUtil.extractUsername(token);
             } catch (ExpiredJwtException e) {
-                filterChain.doFilter(request, response);
-                return;
+                token = null;
             }
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        if (token == null && cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("Refresh-token".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    try {
+                        username = jwtUtil.getSubject(refreshToken);
+                        UserDetails user = userDetailsService.loadUserByUsername(username);
+                        if (jwtUtil.validateToken(refreshToken, user)) {
+                            String newAccessToken = jwtUtil.generateToken(username, exp);
+                            response.setHeader("Authorization", "Bearer " + newAccessToken);
+                            token = newAccessToken;
+                        }
+                    } catch (ExpiredJwtException e) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("Refresh token has expired. Please log in again.");
+                        return;
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (username != null && token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails user = userDetailsService.loadUserByUsername(username);
+            if (jwtUtil.validateToken(token, user)) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 

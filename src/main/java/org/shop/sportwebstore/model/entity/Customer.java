@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Customer {
     private String id;
     @NotNull(message = "User is required.")
-    private User user;
+    private String userId;
     private String firstName;
     private String lastName;
     @NotNull(message = "Shipping address is required.")
