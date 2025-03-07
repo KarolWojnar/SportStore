@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.dto.AuthUser;
 import org.shop.sportwebstore.model.dto.UserDto;
+import org.shop.sportwebstore.model.entity.Cart;
 import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Validated
@@ -33,15 +35,13 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final CartRedisService cartRedisService;
     @Value("${jwt.exp}")
     private int exp;
     @Value("${jwt.refresh.exp}")
     private int refreshExp;
 
     public UserDto createUser(UserDto user) {
-        if (!user.getPassword().equals(user.getConfirmPassword())) {
-            throw new UserException("Password and confirm password do not match.");
-        }
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserException("Email already exists.");
         }
@@ -86,8 +86,8 @@ public class UserService {
         return jwtUtil.refreshToken(authRequest.getEmail(), refreshExp);
     }
 
-    public String login(AuthUser authRequest, HttpServletResponse response) {
-        String accessToken = getAuth(authRequest);
+    public Map<String, Object> login(AuthUser authRequest, HttpServletResponse response) {
+        String token = getAuth(authRequest);
         String refreshToken = jwtUtil.generateToken(authRequest.getEmail(), refreshExp);
 
         Cookie refreshTokenCookie = new Cookie("Refresh-token", refreshToken);
@@ -95,8 +95,14 @@ public class UserService {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
+        response.setHeader("X-Cart-Has-Items", String.valueOf(isCartNotEmpty(authRequest.getEmail())));
+        return Map.of("token", token);
+    }
 
-        return accessToken;
+    private boolean isCartNotEmpty(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found."));
+        Cart cart = cartRedisService.getCart(user.getId());
+        return cart != null && !cart.getProducts().isEmpty();
     }
 
     public String logout(HttpServletResponse response, HttpServletRequest request) {

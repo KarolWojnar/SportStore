@@ -3,12 +3,14 @@ package org.shop.sportwebstore.model.entity;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Builder
 @Document(collection = "customers")
 public class Customer {
+    @Id
     private String id;
     @NotNull(message = "User is required.")
     private String userId;

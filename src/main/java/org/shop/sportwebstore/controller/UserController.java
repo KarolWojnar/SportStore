@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -34,7 +36,8 @@ public class UserController {
         try {
             return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
         } catch (ShopException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("Validation failed", Map.of("email", e.getMessage())));
         }
     }
 }

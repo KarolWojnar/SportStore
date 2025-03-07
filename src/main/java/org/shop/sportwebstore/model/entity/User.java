@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.shop.sportwebstore.model.Roles;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,6 +24,7 @@ public class User {
     private String password;
     @Email(message = "Email is not valid.")
     @NotEmpty(message = "Email is required.")
+    @UniqueElements(message = "Email already exists.")
     private String email;
     @Builder.Default
     private Roles role = Roles.ROLE_CUSTOMER;
