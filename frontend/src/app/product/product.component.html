@@ -1,5 +1,4 @@
 <div class="container mt-5">
-  <!-- Sortowanie i wyszukiwanie -->
   <div class="mb-3 row align-items-center">
     <div class="col-md-8 d-flex gap-2">
       <button class="btn btn-outline-primary flex-grow-1" (click)="sortBy('name')">
@@ -29,7 +28,6 @@
     </div>
   </div>
 
-  <!-- Filtrowanie po kategoriach -->
   <div class="mb-3">
     <div class="d-flex justify-content-between align-items-center">
       <h5 class="mb-0">
@@ -63,7 +61,6 @@
     </div>
   </div>
 
-  <!-- Lista produktów -->
   <div class="row">
     <div *ngFor="let product of products" class="col-md-4 mb-4">
       <div class="card h-100">
@@ -84,8 +81,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Paginacja -->
   <div class="d-flex justify-content-center mt-4">
     <ngb-pagination
       [(page)]="page"

@@ -100,6 +100,6 @@ export class ProductComponent implements AfterViewInit {
   }
 
   toggleCategories(): void {
-    this.showCategories = !this.showCategories; // Przełącz widoczność kategorii
+    this.showCategories = !this.showCategories;
   }
 }

@@ -12,6 +12,7 @@ import { Router, RouterLink } from '@angular/router';
 import { UserDto } from '../../model/user-dto';
 import { NgIf } from '@angular/common';
 
+
 @Component({
   selector: 'app-register',
   imports: [
