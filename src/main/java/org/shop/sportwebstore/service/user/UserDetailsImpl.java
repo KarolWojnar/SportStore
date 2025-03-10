@@ -1,4 +1,4 @@
-package org.shop.sportwebstore.service;
+package org.shop.sportwebstore.service.user;
 
 import org.shop.sportwebstore.model.Roles;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,11 +14,13 @@ public class UserDetailsImpl implements UserDetails {
     private final String email;
     private final String password;
     private final List<GrantedAuthority> authorities;
+    private final boolean enabled;
 
-    public UserDetailsImpl(String email, String password, Roles role) {
+    public UserDetailsImpl(String email, String password, Roles role, boolean enabled) {
         this.email = email;
         this.password = password;
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+        this.enabled = enabled;
     }
 
     @Override
@@ -28,11 +30,17 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return this.email;
     }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
 }

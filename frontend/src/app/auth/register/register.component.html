@@ -1,0 +1,70 @@
+<div class="container d-flex justify-content-center align-items-center mt-5">
+  <div class="card p-4 shadow-lg" style="max-width: 600px; width: 100%">
+    <div *ngIf="successMessage" class="alert alert-success mt-3">
+      {{ successMessage }}
+    </div>
+    <h3 class="text-center">Register</h3>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" formControlName="email" />
+        <div *ngIf="registerForm.get('email')?.invalid && (registerForm.get('email')?.touched || registerForm.get('email')?.dirty)" class="text-danger">
+          {{ registerForm.get('email')?.hasError('required') ? 'Email is required.' : 'Invalid email format.' }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" formControlName="password" />
+        <div *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.touched || registerForm.get('password')?.dirty)" class="text-danger">
+          {{ registerForm.get('password')?.hasError('required') ? 'Password is required.' : 'Password must be at least 8 characters.' }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" />
+        <div *ngIf="registerForm.get('confirmPassword')?.invalid && (registerForm.get('confirmPassword')?.touched || registerForm.get('confirmPassword')?.dirty)" class="text-danger">
+          {{ registerForm.get('confirmPassword')?.hasError('required') ? 'Confirm Password is required.' : '' }}
+        </div>
+        <div *ngIf="registerForm.hasError('passwordMismatch')" class="text-danger">
+          Passwords do not match.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="firstName" class="form-label">First Name</label>
+        <input type="text" class="form-control" id="firstName" formControlName="firstName" />
+        <div *ngIf="registerForm.get('firstName')?.invalid && (registerForm.get('firstName')?.touched || registerForm.get('firstName')?.dirty)" class="text-danger">
+          First Name is required.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="lastName" class="form-label">Last Name</label>
+        <input type="text" class="form-control" id="lastName" formControlName="lastName" />
+        <div *ngIf="registerForm.get('lastName')?.invalid && (registerForm.get('lastName')?.touched || registerForm.get('lastName')?.dirty)" class="text-danger">
+          Last Name is required.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="shippingAddress" class="form-label">Shipping Address</label>
+        <input type="text" class="form-control" id="shippingAddress" formControlName="shippingAddress" />
+        <div *ngIf="registerForm.get('shippingAddress')?.invalid && (registerForm.get('shippingAddress')?.touched || registerForm.get('shippingAddress')?.dirty)" class="text-danger">
+          Shipping Address is required.
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100" [disabled]="registerForm.invalid">Register</button>
+
+      <p class="text-center mt-3">
+        Already have an account? <a routerLink="/login">Login here</a>
+      </p>
+
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>

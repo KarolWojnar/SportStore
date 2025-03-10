@@ -2,8 +2,8 @@ package org.shop.sportwebstore.config;
 
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.entity.Cart;
-import org.shop.sportwebstore.service.JwtRequestFilter;
-import org.shop.sportwebstore.service.UserDetailsImplService;
+import org.shop.sportwebstore.service.user.JwtRequestFilter;
+import org.shop.sportwebstore.service.user.UserDetailsImplService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

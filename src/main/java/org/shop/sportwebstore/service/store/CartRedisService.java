@@ -1,4 +1,4 @@
-package org.shop.sportwebstore.service;
+package org.shop.sportwebstore.service.store;
 
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.entity.Cart;

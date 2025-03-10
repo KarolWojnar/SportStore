@@ -1,0 +1,9 @@
+<div class="container d-flex justify-content-center align-items-center mt-5">
+  <div *ngIf="activationMessage" class="alert alert-success">
+    {{ activationMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+</div>

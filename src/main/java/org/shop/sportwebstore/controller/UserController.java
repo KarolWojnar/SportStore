@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.exception.ShopException;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.UserDto;
-import org.shop.sportwebstore.service.UserService;
+import org.shop.sportwebstore.service.user.UserService;
 import org.shop.sportwebstore.service.ValidationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*")
 @RequestMapping("/api/users")
 public class UserController {
 

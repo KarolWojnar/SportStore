@@ -1,4 +1,4 @@
-package org.shop.sportwebstore.service;
+package org.shop.sportwebstore.service.user;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -6,12 +6,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.UserException;
+import org.shop.sportwebstore.model.ActivationType;
 import org.shop.sportwebstore.model.dto.AuthUser;
 import org.shop.sportwebstore.model.dto.UserDto;
+import org.shop.sportwebstore.model.entity.Activation;
 import org.shop.sportwebstore.model.entity.Cart;
 import org.shop.sportwebstore.model.entity.User;
+import org.shop.sportwebstore.repository.ActivationRepository;
 import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
+import org.shop.sportwebstore.service.store.CartRedisService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -32,21 +37,26 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final CartRedisService cartRedisService;
+    private final ActivationRepository activationRepository;
     @Value("${jwt.exp}")
     private int exp;
     @Value("${jwt.refresh.exp}")
     private int refreshExp;
 
+    @Transactional
     public UserDto createUser(UserDto user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserException("Email already exists.");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User newUser = userRepository.save(UserDto.toUserEntity(user));
+        Activation activation = activationRepository.save(new Activation(newUser.getId(), ActivationType.REGISTRATION));
+        emailService.sendEmailActivation(user.getEmail(), activation);
         if (user.getFirstName() != null || user.getLastName() != null || user.getShippingAddress() != null) {
             return UserDto.toCustomerDto(customerRepository.save(UserDto.toCustomerEntity(user, newUser)), newUser);
         }
@@ -122,5 +132,18 @@ public class UserService {
 
         log.info("Logout successful");
         return "Logout successful";
+    }
+
+    @Transactional
+    public Map<String, String> activate(String activationCode) {
+        Activation activation = activationRepository.findByActivationCodeAndType(activationCode, ActivationType.REGISTRATION)
+                .orElseThrow(() -> new UserException("Activation code not found."));
+        User user = userRepository.findById(activation.getUserId())
+                .orElseThrow(() -> new UserException("User not found."));
+        user.setEnabled(true);
+        userRepository.save(user);
+        activationRepository.delete(activation);
+        log.info("Account {} activated successfully", user.getId());
+        return Map.of("email", user.getEmail());
     }
 }

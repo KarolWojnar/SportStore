@@ -28,4 +28,5 @@ public class User {
     private String email;
     @Builder.Default
     private Roles role = Roles.ROLE_CUSTOMER;
+    private boolean enabled = false;
 }

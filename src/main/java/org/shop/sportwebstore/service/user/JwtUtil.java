@@ -1,4 +1,4 @@
-package org.shop.sportwebstore.service;
+package org.shop.sportwebstore.service.user;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

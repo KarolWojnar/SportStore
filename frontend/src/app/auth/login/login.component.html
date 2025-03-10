@@ -1,0 +1,52 @@
+<div class="container d-flex justify-content-center align-items-center mt-5">
+  <div class="card p-4 shadow-lg" style="max-width: 600px; width: 100%">
+    <div *ngIf="successMessage" class="alert alert-success mt-3">
+      {{ successMessage }}
+    </div>
+    <h3 class="text-center">Login</h3>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input
+          [value]="email"
+          type="email"
+          class="form-control"
+          id="email"
+          formControlName="email"
+        />
+        <div
+          *ngIf="loginForm.get('email')?.invalid && (loginForm.get('email')?.touched || loginForm.get('email')?.dirty)"
+          class="text-danger"
+        >
+          {{ loginForm.get('email')?.hasError('required') ? 'Email is required.' : 'Invalid email format.' }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          formControlName="password"
+        />
+        <div
+          *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)"
+          class="text-danger"
+        >
+          {{ loginForm.get('password')?.hasError('required') ? 'Password is required.' : 'Password must be at least 8 characters.' }}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">Login</button>
+
+      <p class="text-center mt-3">
+        Don't have an account? <a routerLink="/register">Register here</a>
+      </p>
+
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>

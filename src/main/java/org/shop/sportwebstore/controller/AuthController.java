@@ -6,16 +6,14 @@ import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.AuthUser;
-import org.shop.sportwebstore.service.UserService;
+import org.shop.sportwebstore.service.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*")
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -45,6 +43,15 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
         try {
             return ResponseEntity.ok(userService.logout(response, request));
+        } catch (UserException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/activate/{activationCode}")
+    public ResponseEntity<?> activate(@PathVariable String activationCode) {
+        try {
+            return ResponseEntity.ok(userService.activate(activationCode));
         } catch (UserException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

@@ -1,4 +1,4 @@
-package org.shop.sportwebstore.service;
+package org.shop.sportwebstore.service.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,6 @@ public class UserDetailsImplService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username).orElseThrow();
-        return new UserDetailsImpl(user.getEmail(), user.getPassword(), user.getRole());
+        return new UserDetailsImpl(user.getEmail(), user.getPassword(), user.getRole(), user.isEnabled());
     }
 }
