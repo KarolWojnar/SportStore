@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final UserDetailsImplService userDetailsService;
@@ -35,15 +37,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         String token = null;
         String username = null;
-        String refreshToken = null;
+        String refreshToken;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-
             try {
                 username = jwtUtil.extractUsername(token);
             } catch (ExpiredJwtException e) {
                 token = null;
+                log.info("Token has expired. Refreshing token...");
             }
         }
 

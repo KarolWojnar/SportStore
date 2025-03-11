@@ -21,31 +21,32 @@
         </li>
       </ul>
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
+        <li *ngIf="isLoggedIn" class="nav-item">
           <a class="nav-link" routerLink="/cart">
             <fa-icon [icon]="faShoppingCart"></fa-icon>
           </a>
         </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="#"
-            id="navbarDropdown"
-            role="button"
-            data-bs-toggle=""
-            aria-expanded="false"
-          >
+        <li *ngIf="isLoggedIn">
+          <a class="nav-link" routerLink="/profile">
             <fa-icon [icon]="faUser"></fa-icon>
           </a>
+        </li>
         <li>
           <a class="nav-link" (click)="toggleTheme()">
             <fa-icon [icon]="isDarkMode ? faSun : faMoon"></fa-icon>
           </a>
         </li>
+        <li *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/admin">
+            <fa-icon [icon]="faUnlock"></fa-icon>
+          </a>
+        </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="login">
-            <fa-icon [icon]="isLoggedIn ? faSignOutAlt : faSignInAlt"></fa-icon>
-            {{ isLoggedIn ? 'Logout' : 'Login' }}
+          <a *ngIf="isLoggedIn" class="nav-link" (click)="logout()">
+            <fa-icon [icon]="faSignOutAlt"></fa-icon>
+          </a>
+          <a *ngIf="!isLoggedIn" class="nav-link" routerLink="/login">
+            <fa-icon [icon]="faSignInAlt"></fa-icon>
           </a>
         </li>
       </ul>

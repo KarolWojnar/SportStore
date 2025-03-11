@@ -21,6 +21,6 @@ export class StoreService {
   }
 
   getCategories() {
-    return this.httpClient.get<string[]>(`${this.apiUrl}/store/categories`);
+    return this.httpClient.get<{categories: string[]}>(`${this.apiUrl}/store/categories`);
   }
 }

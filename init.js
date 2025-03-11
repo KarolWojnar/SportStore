@@ -71,7 +71,7 @@ const productTemplates = [
         name: "Trail Running Shoes",
         description: "Durable trail running shoes with aggressive tread pattern for off-road terrain.",
         priceRange: [90, 220],
-        imageUrl: "https://example.com/images/trail-running-shoes.jpg",
+        imageUrl: "images/shoe",
         categoryNames: ["Running", "Outdoor"]
     },
     {
@@ -256,7 +256,7 @@ for (const template of productTemplates) {
             price: parseFloat((getRandomInt(template.priceRange[0] * 100, template.priceRange[1] * 100) / 100).toFixed(2)),
             amountLeft: getRandomInt(0, 100),
             description: template.description,
-            imageUrl: template.imageUrl,
+            imageUrl: template.imageUrl + i + '.png',
             categories: productCategories
         };
 

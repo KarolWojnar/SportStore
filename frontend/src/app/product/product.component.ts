@@ -1,16 +1,16 @@
 import { AfterViewInit, Component } from '@angular/core';
 import { StoreService } from '../service/store.service';
 import { Product } from '../model/product';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faChevronDown, faChevronUp, faFilter, faSort, faSortDown, faSortUp, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-product',
-  imports: [CommonModule, RouterModule, NgbPagination, FormsModule, FaIconComponent],
+  imports: [RouterModule, NgbPagination, FormsModule, FaIconComponent, CurrencyPipe, NgForOf, NgIf],
   standalone: true,
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss'
@@ -78,7 +78,7 @@ export class ProductComponent implements AfterViewInit {
 
   loadCategories(): void {
     this.storeService.getCategories().subscribe(categories => {
-      this.allCategories = categories;
+      this.allCategories = categories.categories;
     });
   }
 

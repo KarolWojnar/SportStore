@@ -3,6 +3,7 @@ package org.shop.sportwebstore.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.exception.ShopException;
+import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.UserDto;
 import org.shop.sportwebstore.service.user.UserService;
@@ -35,10 +36,34 @@ public class UserController {
             return ResponseEntity.badRequest().body(ValidationUtil.buildValidationErrors(br));
         }
         try {
-            return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
+            return new ResponseEntity<>(Map.of("user", userService.createUser(user)), HttpStatus.CREATED);
         } catch (ShopException e) {
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse("Validation failed", Map.of("email", e.getMessage())));
+        }
+    }
+
+
+
+
+
+    @GetMapping("/theme")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getTheme() {
+        try {
+            return ResponseEntity.ok(Map.of("isDarkMode", userService.getTheme()));
+        } catch (UserException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/theme")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> saveTheme(@RequestBody boolean isDarkMode) {
+        try {
+            return ResponseEntity.ok(Map.of("isDarkMode", userService.saveTheme(isDarkMode)));
+        } catch (UserException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 }

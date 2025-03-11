@@ -17,6 +17,7 @@ import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.shop.sportwebstore.service.store.CartRedisService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,9 +26,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Validated
@@ -43,6 +44,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final CartRedisService cartRedisService;
     private final ActivationRepository activationRepository;
+    private final RedisTemplate<String, String> redisTemplate;
     @Value("${jwt.exp}")
     private int exp;
     @Value("${jwt.refresh.exp}")
@@ -65,7 +67,7 @@ public class UserService {
 
     public ResponseEntity<?> finAllUsers() {
         List<User> users = userRepository.findAll();
-        return ResponseEntity.ok(users.stream().map(UserDto::toUserDto).toList());
+        return ResponseEntity.ok(Map.of("user", users.stream().map(UserDto::toUserDto).toList()));
     }
 
     public String getAuth(AuthUser authRequest) {
@@ -80,20 +82,6 @@ public class UserService {
             throw new UserException("Invalid email or password.", e);
         }
         return jwtUtil.generateToken(authRequest.getEmail(), exp);
-    }
-
-    public Object refreshToken(AuthUser authRequest) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            authRequest.getEmail(),
-                            authRequest.getPassword()
-                    )
-            );
-        } catch (Exception e) {
-            throw new UserException("Invalid email or password.", e);
-        }
-        return jwtUtil.refreshToken(authRequest.getEmail(), refreshExp);
     }
 
     public Map<String, Object> login(AuthUser authRequest, HttpServletResponse response) {
@@ -115,7 +103,7 @@ public class UserService {
         return cart != null && !cart.getProducts().isEmpty();
     }
 
-    public String logout(HttpServletResponse response, HttpServletRequest request) {
+    public void logout(HttpServletResponse response, HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -131,7 +119,6 @@ public class UserService {
         SecurityContextHolder.clearContext();
 
         log.info("Logout successful");
-        return "Logout successful";
     }
 
     @Transactional
@@ -145,5 +132,39 @@ public class UserService {
         activationRepository.delete(activation);
         log.info("Account {} activated successfully", user.getId());
         return Map.of("email", user.getEmail());
+    }
+
+    public boolean saveTheme(boolean isDarkMode) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+        redisTemplate.opsForValue().set("theme:" + user.getId(), String.valueOf(isDarkMode));
+        return isDarkMode;
+    }
+
+    public boolean getTheme() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+
+        String value = redisTemplate.opsForValue().get("theme:" + user.getId());
+        return Boolean.parseBoolean(value);
+    }
+
+    public boolean isLoggedIn() {
+        try {
+            Optional<User> user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+            return user.isPresent() && user.get().isEnabled();
+        } catch (Exception e) {
+            throw new UserException("User not found.", e);
+        }
+    }
+
+    public String getRole() {
+        try {
+            User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                    .orElseThrow(() -> new UserException("User not found."));
+            return user.getRole().name();
+        } catch (Exception e) {
+            throw new UserException("User not found.", e);
+        }
     }
 }

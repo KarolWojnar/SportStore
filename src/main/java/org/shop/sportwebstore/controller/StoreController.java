@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +44,6 @@ public class StoreController {
     }
     @GetMapping("/categories")
     public ResponseEntity<?> getCategories() {
-        return ResponseEntity.ok(storeService.getCategories());
+        return ResponseEntity.ok(Map.of("categories", storeService.getCategories()));
     }
 }
