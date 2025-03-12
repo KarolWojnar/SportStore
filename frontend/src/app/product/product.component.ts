@@ -7,10 +7,11 @@ import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faChevronDown, faChevronUp, faFilter, faSort, faSortDown, faSortUp, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
+import { CartProductComponent } from './cart-product/cart-product.component';
 
 @Component({
   selector: 'app-product',
-  imports: [RouterModule, NgbPagination, FormsModule, FaIconComponent, CurrencyPipe, NgForOf, NgIf],
+  imports: [RouterModule, NgbPagination, FormsModule, FaIconComponent, CurrencyPipe, NgForOf, NgIf, CartProductComponent],
   standalone: true,
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss'
@@ -97,6 +98,7 @@ export class ProductComponent implements AfterViewInit {
     this.selectedCategories = [];
     this.search = '';
     this.page = 1;
+    this.getProducts();
   }
 
   toggleCategories(): void {

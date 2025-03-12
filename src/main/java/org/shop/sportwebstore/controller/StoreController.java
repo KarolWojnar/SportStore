@@ -30,6 +30,7 @@ public class StoreController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getProducts(@RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(value = "size", defaultValue = "6") int size,
                                          @RequestParam(value = "sort", defaultValue = "id") String sort,
@@ -45,5 +46,14 @@ public class StoreController {
     @GetMapping("/categories")
     public ResponseEntity<?> getCategories() {
         return ResponseEntity.ok(Map.of("categories", storeService.getCategories()));
+    }
+
+    @GetMapping("/featured")
+    public ResponseEntity<?> getFeaturedProducts() {
+        try {
+            return ResponseEntity.ok(storeService.getFeaturedProducts());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
     }
 }

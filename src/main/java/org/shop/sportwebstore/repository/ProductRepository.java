@@ -15,4 +15,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     @Query("{ 'name': { '$regex': ?0, '$options': 'i' } }")
     Page<Product> findByNameMatchesRegexIgnoreCase(String name, Pageable pageable);
+
+
+    List<Product> findTop9ByOrderByOrdersDesc();
 }

@@ -1,1 +1,54 @@
-<p>home works!</p>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="">
+      <h2 class="text-center mb-4 display-4">Featured Products</h2>
+      <div id="productCarousel" class="carousel slide shadow rounded" data-bs-ride="carousel">
+        <div class="carousel-caption-overlay">
+          <p class="featured-subheading">Check out our best sellers</p>
+        </div>
+
+        <div class="carousel-indicators">
+          <button
+            *ngFor="let indicator of carouselIndicators; let i = index"
+            type="button"
+            data-bs-target="#productCarousel"
+            [attr.data-bs-slide-to]="i"
+            [class.active]="i === 0"
+            aria-current="true"
+            [attr.aria-label]="'Slide ' + (i + 1)"
+          ></button>
+        </div>
+
+        <div class="carousel-inner rounded">
+          <div *ngFor="let group of groupedProducts; let i = index" class="carousel-item" [class.active]="i === 0">
+            <div class="row g-4 p-4">
+              <div *ngFor="let product of group" class="col-md-4">
+                <app-cart-product [product]="product"></app-cart-product>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon carousel-control-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon carousel-control-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-5">
+    <div class="col-md-12 text-center">
+      <h2 class="display-4">Welcome to Our Store!</h2>
+      <div *ngIf="!isLoggedIn">
+        <p class="lead">Discover amazing products and exclusive deals. Log in to see the full catalog.</p>
+        <a routerLink="/login" class="btn btn-primary btn-lg me-2">Log In</a>
+        <a routerLink="/register" class="btn btn-outline-primary btn-lg">Register</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -55,6 +55,9 @@ public class StoreService {
         } else {
             products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, pageable);
         }
+        for (Product product : products) {
+            log.info(product.getRatings().values().toString());
+        }
         return Map.of(
                 "products", products.getContent().stream().map(ProductDto::toDto).toList(),
                 "totalElements", products.getTotalElements()
@@ -63,5 +66,10 @@ public class StoreService {
 
     public List<String> getCategories() {
         return categoryRepository.findAll().stream().map(Category::getName).toList();
+    }
+
+    public Map<String, Object> getFeaturedProducts() {
+        List<Product> products = productRepository.findTop9ByOrderByOrdersDesc();
+        return Map.of("products", products.stream().map(ProductDto::toDto).toList());
     }
 }

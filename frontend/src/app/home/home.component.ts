@@ -1,12 +1,74 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CartProductComponent } from '../product/cart-product/cart-product.component';
+import { Product } from '../model/product';
+import { StoreService } from '../service/store.service';
+import { NgForOf, NgIf } from '@angular/common';
+import * as bootstrap from 'bootstrap';
+import { CarouselComponent, SlideComponent } from 'ngx-bootstrap/carousel';
+import { AuthStateService } from '../service/auth-state.service';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [
+    RouterLink,
+    CartProductComponent,
+    NgForOf,
+    CarouselComponent,
+    SlideComponent,
+    NgIf
+  ],
   standalone: true,
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  products: Product[] = [];
+  groupedProducts: Product[][] = [];
+  carouselIndicators: number[] = [];
+  isLoggedIn = false;
 
+  constructor(private storeService: StoreService,
+              private authState: AuthStateService) {
+  }
+
+  ngOnInit(): void {
+    this.authState.isLoggedIn$.subscribe((isLoggedIn) => {
+      this.isLoggedIn = isLoggedIn;
+    });
+    this.loadFeaturedProducts();
+  }
+
+  private loadFeaturedProducts() {
+    this.storeService.getFeaturedProducts().subscribe({
+      next: (products) => {
+        this.products = products.products;
+        console.log('Featured products:', this.products);
+        this.groupedProducts = this.chunkArray(this.products, 3);
+        console.log('Grouped products:', this.groupedProducts);
+        this.carouselIndicators = Array.from({ length: this.groupedProducts.length }, (_, i) => i);
+        console.log('Carousel indicators:', this.carouselIndicators);
+        setTimeout(() => {
+          const carouselElement = document.getElementById('productCarousel');
+          if (carouselElement) {
+            new bootstrap.Carousel(carouselElement, {
+              interval: 3000,
+              wrap: true
+            });
+          }
+        }, 100);
+      },
+      error: (error) => {
+        console.error('Error fetching featured products:', error);
+      }
+    });
+  }
+
+  private chunkArray(products: Product[], size: number): Product[][] {
+    const chunks: Product[][] = [];
+    for (let i = 0; i < products.length; i += 3) {
+      chunks.push(products.slice(i, i + size));
+    }
+    return chunks;
+  }
 }
