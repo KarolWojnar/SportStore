@@ -6,23 +6,23 @@ import { catchError, map, of } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class RoleGuard implements CanActivate {
+export class NoAuthGuard implements CanActivate {
 
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate() {
-    return this.authService.getRole().pipe(
-      map((role) => {
-        if (role.role === 'ROLE_ADMIN') {
-          return true;
-        } else {
+    return this.authService.isLoggedIn().pipe(
+      map((response) => {
+        if (response.isLoggedIn) {
           this.router.navigate(['/']);
           return false;
+        } else {
+          return true;
         }
       }),
       catchError(() => {
         this.router.navigate(['/']);
-        return of(false);
+        return of(true);
       })
     );
   }

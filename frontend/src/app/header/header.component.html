@@ -15,7 +15,7 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
+      <ul  *ngIf="isLoggedIn" class="navbar-nav me-auto">
         <li class="nav-item">
           <a class="nav-link" routerLink="/products">Products</a>
         </li>

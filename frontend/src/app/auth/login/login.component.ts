@@ -48,9 +48,7 @@ export class LoginComponent implements OnInit{
     const user: UserLoginDto = this.loginForm.value;
     this.authService.login(user).subscribe({
       next: () => {
-        this.router.navigate(['/']).then(() => {
-          window.location.reload();
-        });
+        this.router.navigate(['/']);
       },
       error: (err) => {
         this.errorMessage = err.error.message || 'Login failed. Please try again.';

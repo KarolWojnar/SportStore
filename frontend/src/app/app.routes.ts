@@ -9,13 +9,14 @@ import { AuthGuard } from './guard/auth.guard';
 import { RoleGuard } from './guard/role.guard';
 import { AdminComponent } from './admin/admin.component';
 import { CartComponent } from './cart/cart.component';
+import { NoAuthGuard } from './guard/no-auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent, canActivate: [NoAuthGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [NoAuthGuard] },
   { path: 'activate/:activationCode', component: ActivationComponent },
-  { path: 'products', component: ProductComponent },
+  { path: 'products', component: ProductComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [RoleGuard] }

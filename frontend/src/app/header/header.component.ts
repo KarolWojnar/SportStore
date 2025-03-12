@@ -14,6 +14,7 @@ import {
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { ThemeService } from '../service/theme.service';
 import { AuthService } from '../service/auth.service';
+import { AuthStateService } from '../service/auth-state.service';
 
 @Component({
   selector: 'app-header',
@@ -39,36 +40,45 @@ export class HeaderComponent implements OnInit {
 
   constructor(private themeService: ThemeService,
               private authService: AuthService,
-              private router: Router) { }
+              private router: Router,
+              private authState: AuthStateService) { }
 
   ngOnInit(): void {
-    this.authService.isLoggedIn().subscribe((response) => {
-      this.isLoggedIn = response.isLoggedIn;
+    this.authState.isLoggedIn$.subscribe((isLoggedIn) => {
+      this.isLoggedIn = isLoggedIn;
       if (this.isLoggedIn) {
         this.themeService.loadThemePreference().subscribe((isDarkMode) => {
-          this.isDarkMode = isDarkMode.isDarkMode;
-          this.themeService.applyTheme(this.isDarkMode);
+          this.authState.setDarkMode(isDarkMode.isDarkMode);
         });
-        this.authService.getRole().subscribe((isAdmin) => {
-          this.isAdmin = isAdmin.role === 'ROLE_ADMIN';
+
+        this.authService.getRole().subscribe((roleResponse) => {
+          this.authState.setAdmin(roleResponse.role === 'ROLE_ADMIN');
         });
+      } else {
+        this.isAdmin = false;
       }
+    });
+
+    this.authState.isDarkMode$.subscribe((isDarkMode) => {
+      this.isDarkMode = isDarkMode;
+      this.themeService.applyTheme(this.isDarkMode);
+    });
+
+    this.authState.isAdmin$.subscribe((isAdmin) => {
+      this.isAdmin = isAdmin;
     });
   }
 
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
-    this.themeService.toggleTheme(this.isDarkMode);
+    this.themeService.toggleTheme(this.isDarkMode).subscribe();
+    this.authState.setDarkMode(this.isDarkMode);
   }
 
   logout() {
-    this.authService.logout().subscribe( {
+    this.authService.logout().subscribe({
       next: () => {
-        this.isLoggedIn = false;
-        this.isAdmin = false;
-        this.router.navigate(['/login']).then(() => {
-          window.location.reload();
-        });
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         console.error('Logout failed:', err);
