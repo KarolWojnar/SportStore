@@ -13,6 +13,7 @@ import static java.util.stream.Collectors.toList;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductDto {
     private String name;
+    private String id;
     private String description;
     private double price;
     private int quantity;
@@ -29,6 +30,7 @@ public class ProductDto {
         productDto.setRating(product.getRatings().values().iterator().next());
         productDto.setQuantity(product.getAmountLeft());
         productDto.setSoldItems(product.getOrders());
+        productDto.setId(product.getId());
         productDto.setCategories(product.getCategories().stream().map(Category::getName).collect(toList()));
         return productDto;
     }

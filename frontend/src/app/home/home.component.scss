@@ -1,35 +1,36 @@
-.display-4 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
+.carousel-control-prev,
+.carousel-control-next {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 15%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.8;
 }
 
-.lead {
-  font-size: 1.25rem;
-  color: #666;
-  margin-bottom: 2rem;
+.carousel-control-prev {
+  left: -5%;
 }
 
-.btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
+.carousel-control-next {
+  right: -5%;
 }
 
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  opacity: 1;
+}
 
-@media (max-width: 768px) {
-  .carousel-caption-overlay {
-    padding: 0.5rem 1rem;
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(1);
+}
 
-    .featured-heading {
-      font-size: 1.2rem;
-    }
+.carousel-inner {
+  padding: 20px;
+}
 
-    .featured-subheading {
-      font-size: 0.8rem;
-    }
-  }
-
-  .carousel-control-icon {
-    padding: 1rem;
-  }
+.carousel-item {
+  transition: transform 0.5s ease-in-out;
 }

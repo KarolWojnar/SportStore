@@ -1,12 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { Product } from '../../model/product';
-import { CurrencyPipe, NgForOf } from '@angular/common';
+import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-cart-product',
   imports: [
     CurrencyPipe,
-    NgForOf
+    NgForOf,
+    NgIf
   ],
   standalone: true,
   templateUrl: './cart-product.component.html',
@@ -14,5 +15,6 @@ import { CurrencyPipe, NgForOf } from '@angular/common';
 })
 export class CartProductComponent {
   @Input() product!: Product;
+  @Input() isLoggedIn!: boolean;
 
 }
