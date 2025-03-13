@@ -3,6 +3,7 @@ package org.shop.sportwebstore.service.store;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.ProductException;
+import org.shop.sportwebstore.model.dto.ProductCart;
 import org.shop.sportwebstore.model.dto.ProductDto;
 import org.shop.sportwebstore.model.entity.Cart;
 import org.shop.sportwebstore.model.entity.Category;
@@ -32,17 +33,21 @@ public class StoreService {
     private final CategoryRepository categoryRepository;
 
     public void addToCart(String productId) {
-        if (!productRepository.existsByIdAndAmountLeftIsGreaterThan(productId, 0)) {
-            throw new ProductException("Product is unavailable.");
-        }
+        Product product = productRepository.findByIdAndAmountLeftIsGreaterThan(productId, 0).orElseThrow(() -> new ProductException("Product not found."));
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
         Cart cart = cartRedisService.getCart(userId);
         if (cart == null) {
             cart = new Cart(userId);
         }
-        cart.addProduct(productId, 1);
-        cartRedisService.saveCart(userId, cart);
+        if (checkAmount(cart, product)) {
+            cart.addProduct(productId, 1);
+            cartRedisService.saveCart(userId, cart);
+        }
+    }
+
+    private boolean checkAmount(Cart cart, Product product) {
+        return product.getAmountLeft() >= cart.getQuantity(product.getId()) + 1;
     }
 
     public Map<String, Object> getProducts(int page, int size, String sort, String direction,
@@ -77,5 +82,45 @@ public class StoreService {
         return Map.of(
                 "product", ProductDto.toDto(product, true),
                 "relatedProducts", relatedProducts.stream().map(ProductDto::minDto).toList());
+    }
+
+    public Map<String, Object> getCart() {
+        String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
+        Cart cart = cartRedisService.getCart(userId);
+        if (cart == null) {
+            return Map.of("products", List.of());
+        }
+        List<Product> products = productRepository.findAllById(cart.getProducts().keySet());
+        List<ProductCart> productCarts = products.stream().map(product -> ProductCart.toDto(product, cart.getProducts().get(product.getId()))).toList();
+        return Map.of("products", productCarts);
+    }
+
+    public void removeFromCart(String id) {
+        String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
+        Cart cart = cartRedisService.getCart(userId);
+        if (cart == null) {
+            throw new ProductException("Cart is empty.");
+        }
+        cart.removeProduct(id);
+        cartRedisService.saveCart(userId, cart);
+    }
+
+    public void deleteAllFromProduct(String id) {
+        String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
+        Cart cart = cartRedisService.getCart(userId);
+        if (cart == null) {
+            throw new ProductException("Cart is empty.");
+        }
+        cart.getProducts().remove(id);
+        cartRedisService.saveCart(userId, cart);
+    }
+
+    public void deleteCart() {
+        String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
+        cartRedisService.deleteCart(userId);
     }
 }

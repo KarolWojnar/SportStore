@@ -1,0 +1,47 @@
+.img-fluid {
+  height: 70px;
+  object-fit: contain;
+  width: 100%;
+}
+
+.cart-item {
+  width: 100%;
+  object-fit: contain;
+  background-color: rgba(128, 128, 128, 0.15);
+  border-radius: 15px;
+  padding: 10px;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-secondary {
+  border-color: #ddd;
+
+  &:hover {
+    background-color: rgba(143, 143, 143, 0.47);
+  }
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+
+  &:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+  }
+}
+
+.alert-info {
+  background-color: #e2f0ff;
+  border-color: #b6d4fe;
+  color: #0c5460;
+}
+
+.alert-link {
+  color: #0a58ca;
+  text-decoration: underline;
+}

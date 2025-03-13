@@ -9,3 +9,12 @@ export interface Product {
     soldItems: number;
     categories: string[];
 }
+
+export interface ProductCart {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  totalQuantity: number;
+}

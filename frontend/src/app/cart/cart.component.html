@@ -1,1 +1,57 @@
-<p>cart works!</p>
+<div class="container mt-5">
+  <h2 class="mb-4">Your Cart</h2>
+
+  <div *ngIf="products.length > 0; else emptyCart" class="row">
+    <div class="col-md-8">
+      <div *ngFor="let item of products" class="mb-3">
+        <div class="row g-0 cart-item">
+          <a class="col-md-2" [routerLink]="['/products', item.id]">
+            <img [src]="'http://localhost:8080/' + item.image" [alt]="item.name" class="img-fluid align-items-center">
+          </a>
+          <div class="col-md-6">
+            <div class="card-body">
+              <h5 class="card-title">{{ item.name }}</h5>
+              <p class="card-text"><strong>Price:</strong> {{ item.price | currency:'EUR' }}</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card-body d-flex flex-column align-items-end">
+              <div class="d-flex align-items-center mb-2">
+                <button class="btn btn-outline-secondary btn-sm"
+                        (click)="decreaseQuantity(item.id)"
+                        *ngIf="item.quantity > 0">
+                  <fa-icon [icon]="faMinus"></fa-icon>
+                </button>
+                <span class="mx-2">{{ item.quantity }}</span>
+                <button class="btn btn-outline-secondary btn-sm"
+                        (click)="increaseQuantity(item.id)"
+                        *ngIf="item.quantity < item.totalQuantity">
+                  <fa-icon [icon]="faPlus"></fa-icon>
+                </button>
+                <span *ngIf="item.quantity >= item.totalQuantity" class="text-danger">Max</span>
+              </div>
+              <button class="btn btn-danger btn-sm" (click)="removeItem(item.id)">
+                <fa-icon [icon]="faTrash"></fa-icon> Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card-body">
+        <h4 class="card-title">Order Summary</h4>
+        <p class="card-text"><strong>Total:</strong> {{ totalPrice | currency:'EUR' }}</p>
+        <button class="btn btn-danger w-100 mb-2" (click)="clearCart()">Clear Cart</button>
+        <button class="btn btn-success w-100" routerLink="/checkout">Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyCart>
+    <div class="alert alert-warning" role="alert">
+      Your cart is empty. <a routerLink="/products" class="alert-link">Start shopping!</a>
+    </div>
+  </ng-template>
+</div>

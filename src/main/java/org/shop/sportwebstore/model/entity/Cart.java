@@ -23,4 +23,18 @@ public class Cart {
     public void addProduct(String productId, int quantity) {
         products.put(productId, products.getOrDefault(productId, 0) + quantity);
     }
+
+    public int getQuantity(String productId) {
+        return products.getOrDefault(productId, 0);
+    }
+
+    public void removeProduct(String id) {
+        int quantity = products.get(id);
+        if (quantity == 1) {
+            products.remove(id);
+        } else {
+            products.put(id, quantity - 1);
+        }
+
+    }
 }

@@ -18,17 +18,6 @@ public class StoreController {
 
     private final StoreService storeService;
 
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/add-to-cart")
-    public ResponseEntity<?> addToCart(@RequestBody String productId) {
-        try {
-            storeService.addToCart(productId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
-    }
-
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getProducts(@RequestParam(value = "page", defaultValue = "0") int page,
@@ -61,6 +50,60 @@ public class StoreController {
     public ResponseEntity<?> getProductDetails(@PathVariable String id) {
         try {
             return ResponseEntity.ok(storeService.getDetails(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/cart")
+    public ResponseEntity<?> getCart() {
+        try {
+            return ResponseEntity.ok(storeService.getCart());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/cart/add")
+    public ResponseEntity<?> addToCart(@RequestBody String productId) {
+        try {
+            storeService.addToCart(productId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/cart/remove")
+    public ResponseEntity<?> removeFromCart(@RequestBody String id) {
+        try {
+            storeService.removeFromCart(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/cart/{id}")
+    public ResponseEntity<?> deleteAllFromProduct(@PathVariable String id) {
+        try {
+            storeService.deleteAllFromProduct(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/cart")
+    public ResponseEntity<?> deleteCart() {
+        try {
+            storeService.deleteCart();
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

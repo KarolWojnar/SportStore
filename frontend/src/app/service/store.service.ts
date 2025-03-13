@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product } from '../model/product';
+import { Product, ProductCart } from '../model/product';
 import { AuthStateService } from './auth-state.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = 'http://localhost:8080/api/store';
 
   constructor(private httpClient: HttpClient,
               private authState: AuthStateService) { }
@@ -19,23 +19,39 @@ export class StoreService {
     : Observable<{ products: Product[]; totalElements: number }> {
 
     const params = { page, size, sort, direction, search, categories };
-    return this.httpClient.get<{ products: Product[]; totalElements: number }>(`${this.apiUrl}/store`, {params});
+    return this.httpClient.get<{ products: Product[]; totalElements: number }>(`${this.apiUrl}`, {params});
   }
 
   getCategories() {
-    return this.httpClient.get<{categories: string[]}>(`${this.apiUrl}/store/categories`);
+    return this.httpClient.get<{categories: string[]}>(`${this.apiUrl}/categories`);
   }
 
   getFeaturedProducts() {
-    return this.httpClient.get<{ products: Product[]}>(`${this.apiUrl}/store/featured`);
+    return this.httpClient.get<{ products: Product[]}>(`${this.apiUrl}/featured`);
   }
 
   getProductDetails(id: string) {
-    return this.httpClient.get<{product: Product, relatedProducts: Product[]}>(`${this.apiUrl}/store/${id}`);
+    return this.httpClient.get<{product: Product, relatedProducts: Product[]}>(`${this.apiUrl}/${id}`);
+  }
+
+  getCart() {
+    return this.httpClient.get<{products: ProductCart[]}>(`${this.apiUrl}/cart`);
   }
 
   addToCart(id: string) {
-    return this.httpClient.post(`${this.apiUrl}/store/add-to-cart`, id);
+    return this.httpClient.post(`${this.apiUrl}/cart/add`, id);
+  }
+
+  removeOneFromCart(id: string) {
+    return this.httpClient.post(`${this.apiUrl}/cart/remove`, id);
+  }
+
+  removeProduct(id: string): Observable<any> {
+    return this.httpClient.delete(`${this.apiUrl}/cart/${id}`);
+  }
+
+  clearCart(): Observable<any> {
+    return this.httpClient.delete(`${this.apiUrl}/cart`);
   }
 
   sendRequest(id: string, imgElement: HTMLImageElement) {
