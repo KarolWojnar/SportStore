@@ -20,7 +20,7 @@ public class StoreController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/add-to-cart")
-    public ResponseEntity<?> addToCart(String productId) {
+    public ResponseEntity<?> addToCart(@RequestBody String productId) {
         try {
             storeService.addToCart(productId);
             return ResponseEntity.ok().build();
@@ -52,6 +52,15 @@ public class StoreController {
     public ResponseEntity<?> getFeaturedProducts() {
         try {
             return ResponseEntity.ok(storeService.getFeaturedProducts());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProductDetails(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(storeService.getDetails(id));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

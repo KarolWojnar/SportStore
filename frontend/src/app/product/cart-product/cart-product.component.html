@@ -1,19 +1,26 @@
 <div class="card-view h-100 rounded-4">
-  <div class="card-body position-relative">
-    <div class="product-image-container">
-      <span class="product-rating">{{ product.rating }} / 5.0</span>
-      <img [src]="'http://localhost:8080/' + product.image" [alt]="'no image'" class="card-img p-1 mb-1">
+  <a [routerLink]="['/products', product.id]" class="nav-link">
+    <div class="card-body position-relative">
+      <div class="product-image-container">
+        <span class="product-rating">{{ product.rating }} / 5.0</span>
+        <img #productImg [src]="'http://localhost:8080/' + product.image" [alt]="'no image'" class="card-img p-1 mb-1">
+      </div>
+      <h5 class="card-title">{{ product.name }}</h5>
+      <p class="card-text">
+        <span><strong>Price:</strong> {{ product.price | currency:'EUR' }}</span>
+        <span class="mx-2"><strong>Amount left:</strong> {{ product.quantity }}</span>
+      </p>
+      <p class="card-text">
+        <span *ngFor="let category of product.categories" class="badge bg-secondary mx-1">
+          {{ category }}
+        </span>
+      </p>
     </div>
-    <h5 class="card-title">{{ product.name }}</h5>
-    <p class="card-text">
-      <span><strong>Price:</strong> {{ product.price | currency:'EUR' }}</span>
-      <span class="mx-2"><strong>Amount left:</strong> {{ product.quantity }}</span>
-    </p>
-    <p class="card-text">
-      <span *ngFor="let category of product.categories" class="badge bg-secondary mx-1">
-        {{ category }}
-      </span>
-    </p>
-    <button *ngIf="isLoggedIn && product.quantity > 0" class="btn btn-primary add-to-cart-btn">Add to cart</button>
-  </div>
+  </a>
+  <button
+    (click)="addToCart(product.id, productImg, $event)"
+    *ngIf="isLoggedIn && product.quantity > 0"
+    class="btn btn-primary add-to-cart-btn">
+    Add to cart
+  </button>
 </div>

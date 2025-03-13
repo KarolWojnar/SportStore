@@ -15,7 +15,14 @@ export class AuthStateService {
   private isDarkMode = new BehaviorSubject<boolean>(localStorage.getItem('isDarkMode') === 'true');
   isDarkMode$ = this.isDarkMode.asObservable();
 
+  private cartHasItems = new BehaviorSubject<boolean>(localStorage.getItem('cartHasItems') === 'true');
+  cartHasItems$ = this.cartHasItems.asObservable();
+
   constructor() { }
+
+  setCartHasItems(value: boolean) {
+    this.cartHasItems.next(value);
+  }
 
   setLoggedIn(value: boolean) {
     this.isLoggedIn.next(value);

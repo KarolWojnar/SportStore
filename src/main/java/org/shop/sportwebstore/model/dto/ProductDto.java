@@ -22,16 +22,28 @@ public class ProductDto {
     private int soldItems;
     private List<String> categories;
 
-    public static ProductDto toDto(Product product) {
+    public static ProductDto toDto(Product product, boolean withDetails) {
         ProductDto productDto = new ProductDto();
         productDto.setName(product.getName());
         productDto.setPrice(product.getPrice());
         productDto.setImage(product.getImageUrl());
         productDto.setRating(product.getRatings().values().iterator().next());
         productDto.setQuantity(product.getAmountLeft());
-        productDto.setSoldItems(product.getOrders());
         productDto.setId(product.getId());
         productDto.setCategories(product.getCategories().stream().map(Category::getName).collect(toList()));
+        if (withDetails) {
+            productDto.setDescription(product.getDescription());
+            productDto.setSoldItems(product.getOrders());
+        }
+        return productDto;
+    }
+
+    public static ProductDto minDto(Product product) {
+        ProductDto productDto = new ProductDto();
+        productDto.setName(product.getName());
+        productDto.setPrice(product.getPrice());
+        productDto.setImage(product.getImageUrl());
+        productDto.setId(product.getId());
         return productDto;
     }
 }

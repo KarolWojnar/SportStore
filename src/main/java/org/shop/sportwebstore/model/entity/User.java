@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.shop.sportwebstore.model.Roles;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -25,6 +26,7 @@ public class User {
     @Email(message = "Email is not valid.")
     @NotEmpty(message = "Email is required.")
     @UniqueElements(message = "Email already exists.")
+    @Indexed(unique = true)
     private String email;
     @Builder.Default
     private Roles role = Roles.ROLE_CUSTOMER;

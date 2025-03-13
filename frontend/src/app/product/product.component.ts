@@ -6,12 +6,12 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faChevronDown, faChevronUp, faFilter, faSort, faSortDown, faSortUp, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
+import { NgForOf, NgIf } from '@angular/common';
 import { CartProductComponent } from './cart-product/cart-product.component';
 
 @Component({
   selector: 'app-product',
-  imports: [RouterModule, NgbPagination, FormsModule, FaIconComponent, CurrencyPipe, NgForOf, NgIf, CartProductComponent],
+  imports: [RouterModule, NgbPagination, FormsModule, FaIconComponent, NgForOf, NgIf, CartProductComponent],
   standalone: true,
   templateUrl: './product.component.html',
   styleUrl: './product.component.scss'

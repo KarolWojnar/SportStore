@@ -93,8 +93,8 @@ public class UserService {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         response.addCookie(refreshTokenCookie);
-        response.setHeader("X-Cart-Has-Items", String.valueOf(isCartNotEmpty(authRequest.getEmail())));
-        return Map.of("token", token);
+        boolean cartNotEmpty = isCartNotEmpty(authRequest.getEmail());
+        return Map.of("token", token, "cartHasItems", cartNotEmpty);
     }
 
     private boolean isCartNotEmpty(String email) {

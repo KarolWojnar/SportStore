@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class StoreService {
     private final CategoryRepository categoryRepository;
 
     public void addToCart(String productId) {
-        if (!productRepository.existsById(productId)) {
+        if (!productRepository.existsByIdAndAmountLeftIsGreaterThan(productId, 0)) {
             throw new ProductException("Product is unavailable.");
         }
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -55,11 +56,8 @@ public class StoreService {
         } else {
             products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, pageable);
         }
-        for (Product product : products) {
-            log.info(product.getRatings().values().toString());
-        }
         return Map.of(
-                "products", products.getContent().stream().map(ProductDto::toDto).toList(),
+                "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
                 "totalElements", products.getTotalElements()
         );
     }
@@ -70,6 +68,14 @@ public class StoreService {
 
     public Map<String, Object> getFeaturedProducts() {
         List<Product> products = productRepository.findTop9ByOrderByOrdersDesc();
-        return Map.of("products", products.stream().map(ProductDto::toDto).toList());
+        return Map.of("products", products.stream().map(product -> ProductDto.toDto(product, false)).toList());
+    }
+
+    public Map<String, Object> getDetails(String id) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
+        List<Product> relatedProducts = productRepository.findTop4ByCategoriesInAndIdNot(Collections.singleton(product.getCategories()), id);
+        return Map.of(
+                "product", ProductDto.toDto(product, true),
+                "relatedProducts", relatedProducts.stream().map(ProductDto::minDto).toList());
     }
 }

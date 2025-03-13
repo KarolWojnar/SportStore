@@ -26,6 +26,8 @@ export class AuthService {
           localStorage.setItem('token', response.token);
           localStorage.setItem('isAdmin', response.role === 'ROLE_ADMIN' ? 'true' : 'false');
           localStorage.setItem('isDarkMode', response.isDarkMode ? 'true' : 'false');
+          localStorage.setItem('cartHasItems', response.cartHasItems ? 'true' : 'false');
+          this.authState.setCartHasItems(response.cartHasItems);
         }
       })
     );
@@ -37,6 +39,7 @@ export class AuthService {
         this.authState.setLoggedIn(false);
         localStorage.removeItem('token');
         localStorage.removeItem('isAdmin');
+        localStorage.removeItem('cartHasItems');
       })
     );
   }

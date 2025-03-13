@@ -5,7 +5,6 @@ import { Product } from '../model/product';
 import { StoreService } from '../service/store.service';
 import { NgForOf, NgIf } from '@angular/common';
 import * as bootstrap from 'bootstrap';
-import { CarouselComponent, SlideComponent } from 'ngx-bootstrap/carousel';
 import { AuthStateService } from '../service/auth-state.service';
 
 @Component({
@@ -14,8 +13,6 @@ import { AuthStateService } from '../service/auth-state.service';
     RouterLink,
     CartProductComponent,
     NgForOf,
-    CarouselComponent,
-    SlideComponent,
     NgIf
   ],
   standalone: true,
@@ -43,11 +40,8 @@ export class HomeComponent implements OnInit {
     this.storeService.getFeaturedProducts().subscribe({
       next: (products) => {
         this.products = products.products;
-        console.log('Featured products:', this.products);
         this.groupedProducts = this.chunkArray(this.products, 3);
-        console.log('Grouped products:', this.groupedProducts);
         this.carouselIndicators = Array.from({ length: this.groupedProducts.length }, (_, i) => i);
-        console.log('Carousel indicators:', this.carouselIndicators);
         setTimeout(() => {
           const carouselElement = document.getElementById('productCarousel');
           if (carouselElement) {

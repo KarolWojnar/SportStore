@@ -37,6 +37,7 @@ export class HeaderComponent implements OnInit {
 
   isLoggedIn = false;
   isAdmin = false;
+  cartHasItems = true;
 
   constructor(private themeService: ThemeService,
               private authService: AuthService,
@@ -57,6 +58,10 @@ export class HeaderComponent implements OnInit {
       } else {
         this.isAdmin = false;
       }
+    });
+
+    this.authState.cartHasItems$.subscribe((cartHasItems) => {
+      this.cartHasItems = cartHasItems;
     });
 
     this.authState.isDarkMode$.subscribe((isDarkMode) => {

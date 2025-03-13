@@ -18,4 +18,8 @@ public class CartRedisService {
     public void saveCart(String userId, Cart cart) {
         redisTemplate.opsForValue().set("cart:" + userId, cart);
     }
+
+    public void deleteCart(String userId) {
+        redisTemplate.delete("cart:" + userId);
+    }
 }
