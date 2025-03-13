@@ -3,6 +3,7 @@ import { Product } from '../../model/product';
 import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { StoreService } from '../../service/store.service';
+import { HighlightPipe } from '../../service/highlightPipe';
 
 @Component({
   selector: 'app-cart-product',
@@ -10,7 +11,8 @@ import { StoreService } from '../../service/store.service';
     CurrencyPipe,
     NgForOf,
     NgIf,
-    RouterLink
+    RouterLink,
+    HighlightPipe
   ],
   standalone: true,
   templateUrl: './cart-product.component.html',
@@ -19,6 +21,7 @@ import { StoreService } from '../../service/store.service';
 export class CartProductComponent {
   @Input() product!: Product;
   @Input() isLoggedIn!: boolean;
+  @Input() search!: string;
 
   constructor(private storeService: StoreService) {
   }
