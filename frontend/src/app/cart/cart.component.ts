@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ProductCart } from '../model/product';
 import { StoreService } from '../service/store.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
 import { faTrash, faPlus, faMinus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { AuthStateService } from '../service/auth-state.service';
@@ -21,9 +21,11 @@ export class CartComponent implements OnInit {
   faMinus = faMinus;
   products: ProductCart[] = [];
   totalPrice = 0;
+  errorMessage: string | null = null;
 
   constructor(private storeService: StoreService,
-              private authState: AuthStateService) {
+              private authState: AuthStateService,
+              private router: Router) {
   }
 
   ngOnInit(): void {
@@ -106,4 +108,17 @@ export class CartComponent implements OnInit {
   }
 
   protected readonly faShoppingCart = faShoppingCart;
+
+  validAndNavigateToCheckout() {
+    if (this.products.length > 0) {
+      this.storeService.validCart().subscribe({
+        next: () => {
+          this.router.navigate(['/checkout']);
+        },
+        error: (error) => {
+          this.errorMessage = error.error.message;
+        }
+      });
+    }
+  }
 }

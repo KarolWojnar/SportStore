@@ -16,7 +16,7 @@ import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.ActivationRepository;
 import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
-import org.shop.sportwebstore.service.store.CartRedisService;
+import org.shop.sportwebstore.service.store.CartService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +45,7 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final CartRedisService cartRedisService;
+    private final CartService cartService;
     private final ActivationRepository activationRepository;
     private final RedisTemplate<String, String> redisTemplate;
     @Value("${jwt.exp}")
@@ -103,7 +103,7 @@ public class UserService {
 
     private boolean isCartNotEmpty(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found."));
-        Cart cart = cartRedisService.getCart(user.getId());
+        Cart cart = cartService.getCart(user.getId());
         return cart != null && !cart.getProducts().isEmpty();
     }
 

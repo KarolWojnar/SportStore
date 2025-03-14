@@ -1,10 +1,6 @@
 package org.shop.sportwebstore.service.store;
 
-import com.stripe.Stripe;
-
 import com.stripe.exception.StripeException;
-import com.stripe.model.checkout.Session;
-import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.DeliveryTime;
 import org.shop.sportwebstore.model.ShippingAddress;
@@ -27,7 +23,7 @@ import java.util.List;
 public class PaymentService {
 
     private final UserRepository userRepository;
-    private final CartRedisService cartRedisService;
+    private final CartService cartService;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
 
@@ -38,33 +34,8 @@ public class PaymentService {
     private String frontUrl;
 
     public String createPayment(OrderDto orderDto) throws StripeException {
-        Stripe.apiKey = stripeSecretKey;
-
-        SessionCreateParams params = SessionCreateParams.builder()
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.PAYPAL)
-                .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl(frontUrl + "payment/success")
-                .setCancelUrl(frontUrl+ "payment/cancel")
-                .addLineItem(
-                        SessionCreateParams.LineItem.builder()
-                                .setQuantity(1L)
-                                .setPriceData(
-                                        SessionCreateParams.LineItem.PriceData.builder()
-                                                .setCurrency("eur")
-                                                .setUnitAmount((long) ((orderDto.getTotalPrice() + orderDto.getShippingPrice()) * 100L))
-                                                .setProductData(
-                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                .setName("Testowy produkt")
-                                                                .build()
-                                                )
-                                                .build()
-                                )
-                                .build()
-                )
-                .build();
-
-        Session session = Session.create(params);
-        return session.getUrl();
+        //TODO: handle payment
+        return "todo";
     }
 
     public OrderDto getSummary() {
@@ -80,7 +51,10 @@ public class PaymentService {
             address = customer.getShippingAddress();
         }
 
-        Cart cart = cartRedisService.getCart(user.getId());
+        Cart cart = cartService.getCart(user.getId());
+
+        cartService.checkCartProducts(cart, true);
+
         double totalPrice = calculateTotalPrice(cart);
         return OrderDto.builder()
                 .firstName(name)
@@ -99,5 +73,13 @@ public class PaymentService {
             totalPrice += product.getPrice() * cart.getProducts().get(product.getId());
         }
         return totalPrice;
+    }
+
+    public void cancelPayment() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new RuntimeException("User not found."));
+        Cart cart = cartService.getCart(user.getId());
+        List<Product> products = productRepository.findAllById(cart.getProducts().keySet());
+        cartService.cancelPayment(cart, products);
     }
 }

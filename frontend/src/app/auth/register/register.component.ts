@@ -70,7 +70,7 @@ export class RegisterComponent {
         setTimeout(() => {
           this.successMessage = null;
           this.router.navigate(['/login'])
-        }, 5000);
+        }, 3000);
       },
       error: (err) => {
         this.isLoading = false;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { StoreService } from '../service/store.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CurrencyPipe, NgIf } from '@angular/common';
@@ -20,9 +20,10 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.scss'
 })
-export class PaymentComponent implements OnInit{
+export class PaymentComponent implements OnInit, OnDestroy {
   deliveryType: "EXPRESS" | "NORMAL"  = "NORMAL";
   paymentMethod: "CARD" | "BLIK" | "P24" = "CARD";
+  paymentProceed = false;
   priceWithDelivery: number = 0;
   customer!: CustomerDto;
   paymentForm: FormGroup;
@@ -43,6 +44,12 @@ export class PaymentComponent implements OnInit{
       deliveryType: ['NORMAL', Validators.required],
       paymentMethod: ['CARD', Validators.required]
     });
+  }
+
+  ngOnDestroy(): void {
+    if (!this.paymentProceed) {
+      this.cancelPayment();
+    }
   }
 
 
@@ -77,8 +84,18 @@ export class PaymentComponent implements OnInit{
 
   proceedToPayment() {
     this.isLoading = true;
-    console.log(this.paymentForm.value);
-    console.log(this.priceWithDelivery);
+    this.paymentProceed = true;
 
+  }
+
+  cancelPayment() {
+    this.storeService.cancelPayment().subscribe({
+      next: () => {
+        this.router.navigate(['/cart']);
+      },
+      error: (err) => {
+        console.error('Error canceling payment:', err);
+      }
+    });
   }
 }

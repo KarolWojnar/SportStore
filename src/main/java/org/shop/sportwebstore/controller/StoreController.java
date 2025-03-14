@@ -108,4 +108,15 @@ public class StoreController {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/cart/valid")
+    public ResponseEntity<?> validateCart() {
+        try {
+            storeService.validateCart();
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
 }

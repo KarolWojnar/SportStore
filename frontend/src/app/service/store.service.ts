@@ -60,6 +60,10 @@ export class StoreService {
     return this.httpClient.get<{order: CustomerDto}>(`${this.apiUrlPayment}/summary`);
   }
 
+  cancelPayment(): Observable<any> {
+    return this.httpClient.delete(`${this.apiUrlPayment}/cancel`);
+  }
+
   sendRequest(id: string, imgElement: HTMLImageElement) {
     this.addToCart(id).subscribe({
       next: () => {
@@ -103,5 +107,9 @@ export class StoreService {
       document.body.removeChild(flyingImg);
     }, 900);
 
+  }
+
+  validCart() {
+    return this.httpClient.get<{response: any}>(`${this.apiUrl}/cart/valid`);
   }
 }

@@ -8,6 +8,7 @@ import org.shop.sportwebstore.model.dto.ProductDto;
 import org.shop.sportwebstore.model.entity.Cart;
 import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
+import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.CategoryRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.shop.sportwebstore.repository.UserRepository;
@@ -27,7 +28,7 @@ import java.util.Map;
 @Slf4j
 public class StoreService {
 
-    private final CartRedisService cartRedisService;
+    private final CartService cartService;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -36,13 +37,13 @@ public class StoreService {
         Product product = productRepository.findByIdAndAmountLeftIsGreaterThan(productId, 0).orElseThrow(() -> new ProductException("Product not found."));
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
-        Cart cart = cartRedisService.getCart(userId);
+        Cart cart = cartService.getCart(userId);
         if (cart == null) {
             cart = new Cart(userId);
         }
         if (checkAmount(cart, product)) {
             cart.addProduct(productId, 1);
-            cartRedisService.saveCart(userId, cart);
+            cartService.saveCart(userId, cart);
         }
     }
 
@@ -87,7 +88,7 @@ public class StoreService {
     public Map<String, Object> getCart() {
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
-        Cart cart = cartRedisService.getCart(userId);
+        Cart cart = cartService.getCart(userId);
         if (cart == null) {
             return Map.of("products", List.of());
         }
@@ -99,28 +100,35 @@ public class StoreService {
     public void removeFromCart(String id) {
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
-        Cart cart = cartRedisService.getCart(userId);
+        Cart cart = cartService.getCart(userId);
         if (cart == null) {
             throw new ProductException("Cart is empty.");
         }
         cart.removeProduct(id);
-        cartRedisService.saveCart(userId, cart);
+        cartService.saveCart(userId, cart);
     }
 
     public void deleteAllFromProduct(String id) {
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
-        Cart cart = cartRedisService.getCart(userId);
+        Cart cart = cartService.getCart(userId);
         if (cart == null) {
             throw new ProductException("Cart is empty.");
         }
         cart.getProducts().remove(id);
-        cartRedisService.saveCart(userId, cart);
+        cartService.saveCart(userId, cart);
     }
 
     public void deleteCart() {
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
-        cartRedisService.deleteCart(userId);
+        cartService.deleteCart(userId);
+    }
+
+    public void validateCart() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new RuntimeException("User not found."));
+        Cart cart = cartService.getCart(user.getId());
+        cartService.checkCartProducts(cart, false);
     }
 }

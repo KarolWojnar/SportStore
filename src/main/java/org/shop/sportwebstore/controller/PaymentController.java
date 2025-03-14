@@ -1,6 +1,7 @@
 package org.shop.sportwebstore.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.service.store.PaymentService;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,15 @@ public class PaymentController {
     public ResponseEntity<?> getSummary() {
         try {
             return ResponseEntity.ok(Map.of("order", paymentService.getSummary()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+    @DeleteMapping("/cancel")
+    public ResponseEntity<?> cancelPayment() {
+        try {
+            paymentService.cancelPayment();
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

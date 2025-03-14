@@ -24,4 +24,5 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     List<Product> findTop4ByCategoriesInAndIdNot(Collection<List<Category>> categories, String id);
     Optional<Product> findByIdAndAmountLeftIsGreaterThan(String id, int amountLeft);
+
 }
