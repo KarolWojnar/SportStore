@@ -4,7 +4,7 @@ import { StoreService } from '../service/store.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { RouterLink } from '@angular/router';
 import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
-import { faTrash, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faPlus, faMinus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { AuthStateService } from '../service/auth-state.service';
 
 @Component({
@@ -105,4 +105,5 @@ export class CartComponent implements OnInit {
     });
   }
 
+  protected readonly faShoppingCart = faShoppingCart;
 }

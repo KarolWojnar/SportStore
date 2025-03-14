@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import org.shop.sportwebstore.model.Roles;
+import org.shop.sportwebstore.model.ShippingAddress;
 import org.shop.sportwebstore.model.entity.Customer;
 import org.shop.sportwebstore.model.entity.User;
 
@@ -25,7 +26,7 @@ public class UserDto {
     private String confirmPassword;
     private String firstName;
     private String lastName;
-    private String shippingAddress;
+    private ShippingAddress shippingAddress;
     private Roles role;
 
     @AssertTrue(message = "Passwords must match.")

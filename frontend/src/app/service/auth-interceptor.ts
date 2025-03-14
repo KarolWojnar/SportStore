@@ -1,4 +1,5 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpEvent, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
+import { tap } from 'rxjs';
 
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
@@ -16,4 +17,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(authReq);
   }
   return next(authCookie);
+};
+
+export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
+  return next(req).pipe(
+    tap((event: HttpEvent<any>) => {
+      if (event instanceof HttpResponse) {
+        const token = event.headers.get('Authorization');
+        if (token) {
+          const newToken = token.replace('Bearer ', '');
+          localStorage.setItem('token', newToken);
+        }
+      }
+    })
+  );
 };

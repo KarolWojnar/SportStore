@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product, ProductCart } from '../model/product';
 import { AuthStateService } from './auth-state.service';
+import { CustomerDto } from '../model/user-dto';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
   private apiUrl = 'http://localhost:8080/api/store';
+  private apiUrlPayment = 'http://localhost:8080/api/payment';
 
   constructor(private httpClient: HttpClient,
               private authState: AuthStateService) { }
@@ -52,6 +54,10 @@ export class StoreService {
 
   clearCart(): Observable<any> {
     return this.httpClient.delete(`${this.apiUrl}/cart`);
+  }
+
+  checkout(): Observable<{order: CustomerDto}> {
+    return this.httpClient.get<{order: CustomerDto}>(`${this.apiUrlPayment}/summary`);
   }
 
   sendRequest(id: string, imgElement: HTMLImageElement) {

@@ -45,3 +45,19 @@
   color: #0a58ca;
   text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cart-item .col-md-4 {
+    margin-top: 10px;
+  }
+
+  .order-summary {
+    margin-top: 20px;
+  }
+}

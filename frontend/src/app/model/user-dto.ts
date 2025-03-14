@@ -2,11 +2,30 @@ export interface UserDto extends UserLoginDto{
   confirmPassword?: string;
   firstName?: string;
   lastName?: string;
-  shippingAddress?: string;
+  shippingAddress?: ShippingAddress | null;
   role?: string;
 }
 
 export interface UserLoginDto {
   email: string;
   password: string;
+}
+
+export interface CustomerDto {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  shippingAddress?: ShippingAddress;
+  totalPrice?: number;
+  deliveryTime?: string;
+  paymentMethod?: string;
+  shippingPrice?: number;
+}
+
+export interface ShippingAddress {
+  address: string;
+  city: string;
+  zipCode: string;
+  country: string;
 }

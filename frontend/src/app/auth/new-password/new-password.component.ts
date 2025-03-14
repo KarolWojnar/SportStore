@@ -66,7 +66,7 @@ export class NewPasswordComponent implements OnInit{
         return;
       }
       this.authService.resetPassword(this.password, this.confirmPassword, this.resetCode).subscribe({
-        next: (response) => {
+        next: () => {
           this.isLoading = false;
           this.successMessage = "Password changed. You can login now!"
           setTimeout(() => {

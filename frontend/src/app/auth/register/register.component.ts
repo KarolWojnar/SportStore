@@ -42,8 +42,7 @@ export class RegisterComponent {
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(8)]],
       firstName: [''],
-      lastName: [''],
-      shippingAddress: [''],
+      lastName: ['']
     },
       { validators: this.passwordsMatchValidator }
     );
@@ -63,7 +62,7 @@ export class RegisterComponent {
     this.errorMessage = null;
     const user: UserDto = this.registerForm.value;
     this.authService.registerUser(user).subscribe({
-      next: (res) => {
+      next: () => {
         this.registerForm.reset();
         this.errorMessage = null;
         this.isLoading = false;

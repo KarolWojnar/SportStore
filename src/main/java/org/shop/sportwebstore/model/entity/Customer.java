@@ -3,6 +3,7 @@ package org.shop.sportwebstore.model.entity;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import org.shop.sportwebstore.model.ShippingAddress;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,5 +18,5 @@ public class Customer {
     private String firstName;
     private String lastName;
     @NotNull(message = "Shipping address is required.")
-    private String shippingAddress;
+    private ShippingAddress shippingAddress;
 }

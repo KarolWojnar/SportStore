@@ -58,6 +58,7 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new UserException("Email already exists.");
         }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         User newUser = userRepository.save(UserDto.toUserEntity(user));
         Activation activation = activationRepository.save(new Activation(newUser.getId(), ActivationType.REGISTRATION));

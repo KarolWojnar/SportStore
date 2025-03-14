@@ -51,14 +51,6 @@
         </div>
       </div>
 
-      <div class="mb-3">
-        <label for="shippingAddress" class="form-label">Shipping Address</label>
-        <input type="text" class="form-control" id="shippingAddress" formControlName="shippingAddress" />
-        <div *ngIf="registerForm.get('shippingAddress')?.invalid && (registerForm.get('shippingAddress')?.touched || registerForm.get('shippingAddress')?.dirty)" class="text-danger">
-          Shipping Address is required.
-        </div>
-      </div>
-
       <button type="submit" class="btn btn-primary w-100" [disabled]="registerForm.invalid">Register</button>
 
       <p class="text-center mt-3">

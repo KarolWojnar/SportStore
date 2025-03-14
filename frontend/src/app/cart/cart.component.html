@@ -40,7 +40,7 @@
     </div>
 
     <div class="col-md-4">
-      <div class="card-body">
+      <div class="card-body order-summary">
         <h4 class="card-title">Order Summary</h4>
         <p class="card-text"><strong>Total:</strong> {{ totalPrice | currency:'EUR' }}</p>
         <button class="btn btn-danger w-100 mb-2" (click)="clearCart()">Clear Cart</button>
@@ -50,8 +50,13 @@
   </div>
 
   <ng-template #emptyCart>
-    <div class="alert alert-warning" role="alert">
-      Your cart is empty. <a routerLink="/products" class="alert-link">Start shopping!</a>
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+      <fa-icon [icon]="faShoppingCart" class="me-3"></fa-icon>
+      <div>
+        <h4 class="alert-heading">Your cart is empty</h4>
+        <p>Start shopping to add items to your cart.</p>
+        <a routerLink="/products" class="alert-link">Explore products</a>
+      </div>
     </div>
   </ng-template>
 </div>

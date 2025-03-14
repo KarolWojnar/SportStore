@@ -13,6 +13,7 @@ import { NoAuthGuard } from './guard/no-auth.guard';
 import { DetailsComponent } from './product/details/details.component';
 import { RecoveryPasswordComponent } from './auth/recovery-password/recovery-password.component';
 import { NewPasswordComponent } from './auth/new-password/new-password.component';
+import { PaymentComponent } from './payment/payment.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -25,5 +26,6 @@ export const routes: Routes = [
   { path: 'products/:id', component: DetailsComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
+  { path: 'checkout', component: PaymentComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [RoleGuard] }
 ];
