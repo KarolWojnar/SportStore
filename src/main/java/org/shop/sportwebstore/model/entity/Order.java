@@ -28,11 +28,17 @@ public class Order {
     private Map<String, Integer> products;
     private OrderStatus status = OrderStatus.CREATED;
     private String orderAddress;
-    private Date orderDate;
+    private Date orderDate = Date.from(java.time.Instant.now());
+    private Date lastModified;
     private Date deliveryDate;
 
     public Order(Map<String, Integer> products, String userId) {
         this.products = products;
         this.userId = userId;
+    }
+
+    public void setNewStatus(OrderStatus status) {
+        this.status = status;
+        this.lastModified = Date.from(java.time.Instant.now());
     }
 }

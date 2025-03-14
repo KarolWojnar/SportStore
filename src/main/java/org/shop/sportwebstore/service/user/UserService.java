@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ActivationType;
 import org.shop.sportwebstore.model.dto.AuthUser;
+import org.shop.sportwebstore.model.dto.ResetPassword;
 import org.shop.sportwebstore.model.dto.UserDto;
 import org.shop.sportwebstore.model.entity.Activation;
 import org.shop.sportwebstore.model.entity.Cart;
@@ -26,6 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +126,7 @@ public class UserService {
 
     @Transactional
     public Map<String, String> activate(String activationCode) {
-        Activation activation = activationRepository.findByActivationCodeAndType(activationCode, ActivationType.REGISTRATION)
+        Activation activation = activationRepository.findByActivationCodeAndTypeAndExpiresAtAfter(activationCode, ActivationType.REGISTRATION, LocalDateTime.now())
                 .orElseThrow(() -> new UserException("Activation code not found."));
         User user = userRepository.findById(activation.getUserId())
                 .orElseThrow(() -> new UserException("User not found."));
@@ -166,5 +169,33 @@ public class UserService {
         } catch (Exception e) {
             throw new UserException("User not found.", e);
         }
+    }
+
+    public String recoveryPassword(String email) {
+        User user = userRepository.findByEmailAndEnabled(email, true).orElseThrow(() -> new UserException("Email not found."));
+        Activation activation = activationRepository.save(new Activation(user.getId(), ActivationType.RESET_PASSWORD));
+        emailService.sendEmailResetPassword(email, activation);
+        return "Code sent! Check your email.";
+    }
+
+    public boolean checkResetCode(String code) {
+        Activation activation = activationRepository.findByActivationCodeAndTypeAndExpiresAtAfter(code, ActivationType.RESET_PASSWORD, LocalDateTime.now())
+                .orElseThrow(() -> new UserException("Activation code not found."));
+        return activation.getActivationCode().equals(code);
+    }
+
+    @Transactional
+    public String resetPassword(ResetPassword resetPassword) {
+        if (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword())) {
+            throw new UserException("Passwords do not match.");
+        }
+        Activation activation = activationRepository.findByActivationCodeAndTypeAndExpiresAtAfter(resetPassword.getCode(), ActivationType.RESET_PASSWORD, LocalDateTime.now())
+                .orElseThrow(() -> new UserException("Activation code not found."));
+        User user = userRepository.findById(activation.getUserId())
+                .orElseThrow(() -> new UserException("User not found."));
+        user.setPassword(passwordEncoder.encode(resetPassword.getPassword()));
+        userRepository.save(user);
+        activationRepository.delete(activation);
+        return "Password reset successfully.";
     }
 }

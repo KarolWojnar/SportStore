@@ -70,4 +70,16 @@ export class AuthService {
       })
     );
   }
+
+  recoveryPassword(email: string): Observable<any> {
+    return this.httpClient.post<{response: any}>(`${this.apiUrl}/auth/recovery-password`, email);
+  }
+
+  checkResetCode(resetCode: string) {
+    return this.httpClient.get<boolean>(`${this.apiUrl}/auth/check-reset-code/${resetCode}`);
+  }
+
+  resetPassword(password: string, confirmPassword: string, code: string) {
+    return this.httpClient.post<{response: any}>(`${this.apiUrl}/auth/reset-password`, {password, confirmPassword, code});
+  }
 }

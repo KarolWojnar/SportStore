@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.model.ActivationType;
 import org.shop.sportwebstore.model.entity.Activation;
 import org.shop.sportwebstore.repository.ActivationRepository;
+import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class SchedulerService {
 
     private final UserRepository userRepository;
     private final ActivationRepository activationRepository;
+    private final CustomerRepository customerRepository;
 
     @Scheduled(cron = "0 0 0 * * *")
     public void clearInactive() {
@@ -32,6 +34,7 @@ public class SchedulerService {
     }
 
     private void clearInactiveUsers(Collection<String> ids) {
+        customerRepository.deleteAllByUserIdIn(ids);
         userRepository.deleteAllByIdIn(ids);
     }
 }

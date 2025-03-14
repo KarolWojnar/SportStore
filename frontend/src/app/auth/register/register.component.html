@@ -3,6 +3,9 @@
     <div *ngIf="successMessage" class="alert alert-success mt-3">
       {{ successMessage }}
     </div>
+    <div *ngIf="isLoading" class="alert d-flex bg-black bg-opacity-10 justify-content-center align-items-center">
+      <mat-progress-spinner mode="indeterminate" color="primary"></mat-progress-spinner>
+    </div>
     <h3 class="text-center">Register</h3>
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="mb-3">

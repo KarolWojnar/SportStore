@@ -39,4 +39,21 @@ public class EmailService {
             throw new RuntimeException("Failed to send activation email", e);
         }
     }
+
+    public void sendEmailResetPassword(String email, Activation activation) {
+        try {
+            String expiration = activation.getExpiresAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+            String urlLink = url + "reset-password/" + activation.getActivationCode();
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(sender);
+            helper.setTo(email);
+            helper.setSubject(ConstantStrings.RESET_PASSWORD_SUBJECT);
+            helper.setText(ConstantStrings.RESET_PASSWORD_BODY
+                    .formatted(urlLink, expiration, urlLink, urlLink), true);
+            javaMailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send reset password email", e);
+        }
+    }
 }

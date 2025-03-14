@@ -11,6 +11,7 @@ import { AuthService } from '../../service/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { UserDto } from '../../model/user-dto';
 import { NgIf } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 @Component({
@@ -18,7 +19,8 @@ import { NgIf } from '@angular/common';
   imports: [
     ReactiveFormsModule,
     NgIf,
-    RouterLink
+    RouterLink,
+    MatProgressSpinnerModule
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
@@ -28,6 +30,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   errorMessage: string | null = null;
   successMessage: string | null = null;
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -56,12 +59,14 @@ export class RegisterComponent {
     if (this.registerForm.invalid) {
       return;
     }
-
+    this.isLoading = true;
+    this.errorMessage = null;
     const user: UserDto = this.registerForm.value;
     this.authService.registerUser(user).subscribe({
       next: (res) => {
         this.registerForm.reset();
         this.errorMessage = null;
+        this.isLoading = false;
         this.successMessage = 'Registration successful. Please confirm your account by email.';
         setTimeout(() => {
           this.successMessage = null;
@@ -69,10 +74,11 @@ export class RegisterComponent {
         }, 5000);
       },
       error: (err) => {
+        this.isLoading = false;
         if (err.error.details?.passwordMatching) {
           this.registerForm.setErrors({ passwordMismatch: true });
         }
-        this.errorMessage = err.error.details.toString() || 'Registration failed. Please try again.';
+        this.errorMessage = err.error.details.email.toString() || 'Registration failed. Please try again.';
       },
     });
   }

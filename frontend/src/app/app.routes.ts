@@ -11,12 +11,16 @@ import { AdminComponent } from './admin/admin.component';
 import { CartComponent } from './cart/cart.component';
 import { NoAuthGuard } from './guard/no-auth.guard';
 import { DetailsComponent } from './product/details/details.component';
+import { RecoveryPasswordComponent } from './auth/recovery-password/recovery-password.component';
+import { NewPasswordComponent } from './auth/new-password/new-password.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent, canActivate: [NoAuthGuard] },
   { path: 'register', component: RegisterComponent, canActivate: [NoAuthGuard] },
   { path: 'activate/:activationCode', component: ActivationComponent },
+  { path: 'reset-password', component: RecoveryPasswordComponent, canActivate: [NoAuthGuard] },
+  { path: 'reset-password/:resetCode', component: NewPasswordComponent, canActivate: [NoAuthGuard] },
   { path: 'products', component: ProductComponent, canActivate: [AuthGuard] },
   { path: 'products/:id', component: DetailsComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
