@@ -32,6 +32,7 @@ public class StoreService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final PaymentService paymentService;
 
     public void addToCart(String productId) {
         Product product = productRepository.findByIdAndAmountLeftIsGreaterThan(productId, 0).orElseThrow(() -> new ProductException("Product not found."));
@@ -130,5 +131,15 @@ public class StoreService {
                 .orElseThrow(() -> new RuntimeException("User not found."));
         Cart cart = cartService.getCart(user.getId());
         cartService.checkCartProducts(cart, false);
+    }
+
+    public double calculateTotalPriceOfCart() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new RuntimeException("User not found."));
+        Cart cart = cartService.getCart(user.getId());
+        if (cart == null) {
+            throw new ProductException("Cart is empty.");
+        }
+        return paymentService.calculateTotalPrice(cart);
     }
 }

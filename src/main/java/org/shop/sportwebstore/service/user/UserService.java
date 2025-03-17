@@ -8,10 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ActivationType;
 import org.shop.sportwebstore.model.dto.AuthUser;
+import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.model.dto.ResetPassword;
 import org.shop.sportwebstore.model.dto.UserDto;
 import org.shop.sportwebstore.model.entity.Activation;
 import org.shop.sportwebstore.model.entity.Cart;
+import org.shop.sportwebstore.model.entity.Customer;
 import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.ActivationRepository;
 import org.shop.sportwebstore.repository.CustomerRepository;
@@ -198,5 +200,20 @@ public class UserService {
         userRepository.save(user);
         activationRepository.delete(activation);
         return "Password reset successfully.";
+    }
+
+    public Customer findOrCreateCustomer(OrderDto orderDto) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+        Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
+        if (customer == null) {
+            customer = new Customer();
+        }
+        customer.setUserId(user.getId());
+        customer.setFirstName(orderDto.getFirstName());
+        customer.setLastName(orderDto.getLastName());
+        customer.setShippingAddress(orderDto.getShippingAddress());
+        customerRepository.save(customer);
+        return customer;
     }
 }

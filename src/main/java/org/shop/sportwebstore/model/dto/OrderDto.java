@@ -17,7 +17,6 @@ public class OrderDto {
     private String email;
     private ShippingAddress shippingAddress;
     private double totalPrice;
-    private double shippingPrice;
     private DeliveryTime deliveryTime;
     private SessionCreateParams.PaymentMethodType paymentMethod;
 }

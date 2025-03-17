@@ -119,4 +119,14 @@ public class StoreController {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/cart/totalPrice")
+    public ResponseEntity<?> calculateTotalPrice() {
+        try {
+            return ResponseEntity.ok(Map.of("totalPrice", storeService.calculateTotalPriceOfCart()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
 }

@@ -16,51 +16,56 @@
   <form [formGroup]="paymentForm" (ngSubmit)="proceedToPayment()">
     <div class="row">
       <div class="col-md-8">
-        <div class="mb-3">
-          <div class="card-header">
-            <h6 class="mb-0">Delivery Type</h6>
-          </div>
-          <div class="card-body">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" formControlName="deliveryType" id="standardDelivery" value="NORMAL">
-              <label class="form-check-label" for="standardDelivery">
-                Standard Delivery (3-5 days) - Free
-              </label>
+        <div class="row">
+          <div class="mb-3 col-md-6">
+            <div class="card-header">
+              <h6 class="mb-0">Delivery Type</h6>
             </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" formControlName="deliveryType" id="expressDelivery" value="EXPRESS">
-              <label class="form-check-label" for="expressDelivery">
-                Express Delivery (1-2 days) - €10.00
-              </label>
+            <div class="card-body">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" formControlName="deliveryType" id="standardDelivery" value="NORMAL">
+                <label class="form-check-label" for="standardDelivery">
+                  Standard Delivery (3-5 days) - Free
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" formControlName="deliveryType" id="expressDelivery" value="EXPRESS">
+                <label class="form-check-label" for="expressDelivery">
+                  Express Delivery (1-2 days) - €10.00
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-md-6">
+            <div class="card-header">
+              <h6 class="mb-0">Payment Method</h6>
+            </div>
+            <div class="card-body">
+              <div *ngFor="let method of paymentMethods" class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  formControlName="paymentMethod"
+                  [id]="method.id"
+                  [value]="method.id"
+                />
+                <label class="form-check-label" [for]="method.id">
+                  <fa-icon [icon]="method.icon" class="me-2"></fa-icon>
+                  {{ method.label }}
+                </label>
+              </div>
             </div>
           </div>
         </div>
-
-        <div class="mb-3">
-          <div class="card-header">
-            <h6 class="mb-0">Payment Method</h6>
-          </div>
-          <div class="card-body">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" formControlName="paymentMethod" id="creditCard" value="CARD">
-              <label class="form-check-label" for="creditCard">Credit/Debit Card</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" formControlName="paymentMethod" id="blik" value="BLIK">
-              <label class="form-check-label" for="blik">BLIK</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" formControlName="paymentMethod" id="p24" value="P24">
-              <label class="form-check-label" for="p24">Przelewy24</label>
-            </div>
-          </div>
-        </div>
-
         <div class="mb-3">
           <div class="card-header">
             <h6 class="mb-0">Billing Details</h6>
           </div>
           <div class="card-body">
+            <div *ngIf="errorFormMessage" class="alert alert-danger">
+              {{ errorFormMessage }}
+            </div>
             <div class="row">
               <div class="col-md-6 mb-2">
                 <label for="firstName" class="form-label">First Name</label>
@@ -117,7 +122,7 @@
           <div class="card-body">
             <div class="d-flex justify-content-between mb-1">
               <span>Subtotal</span>
-              <span>{{ customer.totalPrice | currency:'EUR' }}</span>
+              <span>{{ price | currency:'EUR' }}</span>
             </div>
             <div class="d-flex justify-content-between mb-1">
               <span>Shipping</span>
@@ -128,11 +133,11 @@
               <strong>Total</strong>
               <strong>{{ priceWithDelivery | currency:'EUR' }}</strong>
             </div>
-            <button type="submit" class="btn btn-success w-100 mb-2" [disabled]="isLoading">
-              Complete Purchase
-            </button>
-            <button type="button" class="btn btn-outline-secondary w-100" routerLink="/cart" [disabled]="isLoading">
+            <button type="button" class="btn btn-outline-secondary mb-2 w-100" routerLink="/cart" [disabled]="isLoading">
               Back to Cart
+            </button>
+            <button type="submit" class="btn btn-success w-100 " [disabled]="isLoading">
+              Complete Purchase
             </button>
             <div class="alert bg-warning text-center bg-opacity-10 mt-3">
               <strong>YOU HAVE 30 MINUTES TO FINISH PAYMENT</strong>

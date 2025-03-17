@@ -1,10 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { StoreService } from '../service/store.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CurrencyPipe, NgIf } from '@angular/common';
+import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
 import { CustomerDto } from '../model/user-dto';
 import { Router, RouterLink } from '@angular/router';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import {
+  faCreditCard,
+  faMobile,
+  faMoneyBill,
+  faMoneyBill1,
+  faMoneyBill1Wave,
+  faWallet
+} from '@fortawesome/free-solid-svg-icons';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-payment',
@@ -14,22 +23,39 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     RouterLink,
     MatProgressSpinner,
     ReactiveFormsModule,
-    NgIf
+    NgIf,
+    NgForOf,
+    FaIconComponent
   ],
   standalone: true,
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.scss'
 })
 export class PaymentComponent implements OnInit, OnDestroy {
-  deliveryType: "EXPRESS" | "NORMAL"  = "NORMAL";
-  paymentMethod: "CARD" | "BLIK" | "P24" = "CARD";
+  deliveryType: "EXPRESS" | "STANDARD"  = "STANDARD";
+  paymentMethods = [
+    { id: 'CARD', label: 'Credit/Debit Card', icon: faCreditCard },
+    { id: 'P24', label: 'Przelewy24', icon: faMoneyBill },
+    { id: 'PAYPAL', label: 'PayPal', icon: faMoneyBill1 },
+    { id: 'REVOLUT_PAY', label: 'Revolut Pay', icon: faWallet},
+    { id: 'MOBILEPAY', label: 'MobilePay', icon: faMobile }
+  ];
+  paymentMethodIcons = {
+    "CARD": faCreditCard,
+    "P24": faMoneyBill,
+    "PAYPAL": faMoneyBill1,
+    "REVOLUT_PAY": faMoneyBill1Wave,
+    "MOBILEPAY": faMobile,
+  };
   paymentProceed = false;
   priceWithDelivery: number = 0;
   customer!: CustomerDto;
   paymentForm: FormGroup;
   errorMessage: string | null = null;
   successMessage: string | null = null;
+  errorFormMessage: string | null = null;
   isLoading = false;
+  price = 0;
   constructor(private storeService: StoreService,
               private fb: FormBuilder,
               private router: Router
@@ -52,6 +78,17 @@ export class PaymentComponent implements OnInit, OnDestroy {
     }
   }
 
+  checkPrice() {
+    this.storeService.getTotalPrice().subscribe({
+      next: (totalPrice) => {
+        this.priceWithDelivery = totalPrice.totalPrice;
+        this.price = totalPrice.totalPrice;
+      },
+      error: (err) => {
+        console.error('Error fetching total price:', err);
+      }
+    });
+  }
 
   loadPaymentData() {
     const storedCustomer = localStorage.getItem('customer');
@@ -95,11 +132,40 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPaymentData();
+    this.checkPrice();
+    this.addDeliveryTypeListener();
   }
 
   proceedToPayment() {
-    this.isLoading = true;
-    this.paymentProceed = true;
+    if (this.paymentForm.valid) {
+      this.isLoading = true;
+      this.paymentProceed = true;
+      this.errorFormMessage = null;
+      this.errorMessage = null;
+      this.customer.firstName = this.paymentForm.value.firstName;
+      this.customer.lastName = this.paymentForm.value.lastName;
+      this.customer.deliveryTime = this.deliveryType;
+      this.customer.paymentMethod = this.paymentForm.value.paymentMethod;
+      this.customer.shippingAddress = {
+        address: this.paymentForm.value.address,
+        city: this.paymentForm.value.city,
+        zipCode: this.paymentForm.value.zipCode,
+        country: this.paymentForm.value.country
+      };
+      this.storeService.goToPayment(this.customer).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.successMessage = 'Payment processed successfully!';
+        },
+        error: (err) => {
+          console.error('Error updating customer:', err);
+          this.isLoading = false;
+          this.errorMessage = 'An error occurred while processing payment. Try again later.';
+        }
+      });
+    } else {
+      this.errorFormMessage = 'Please fill in all required fields.';
+    }
 
   }
 
@@ -112,6 +178,14 @@ export class PaymentComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error canceling payment:', err);
       }
+    });
+  }
+
+  private addDeliveryTypeListener() {
+    this.paymentForm.get('deliveryType')?.valueChanges.subscribe((value) => {
+      this.deliveryType = value;
+      this.customer.deliveryTime = value === 'EXPRESS' ? 'EXPRESS' : 'STANDARD';
+      this.priceWithDelivery = this.deliveryType === 'EXPRESS' ? (this.customer.totalPrice || 0) + 10 : (this.customer.totalPrice || 0);
     });
   }
 }

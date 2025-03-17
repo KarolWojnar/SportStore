@@ -60,6 +60,10 @@ export class StoreService {
     return this.httpClient.get<{order: CustomerDto}>(`${this.apiUrlPayment}/summary`);
   }
 
+  getTotalPrice(): Observable<{totalPrice: number}> {
+    return this.httpClient.get<{totalPrice: number}>(`${this.apiUrl}/cart/totalPrice`);
+  }
+
   cancelPayment(): Observable<any> {
     return this.httpClient.delete(`${this.apiUrlPayment}/cancel`);
   }
@@ -111,5 +115,9 @@ export class StoreService {
 
   validCart() {
     return this.httpClient.get<{response: any}>(`${this.apiUrl}/cart/valid`);
+  }
+
+  goToPayment(customer: CustomerDto) {
+    return this.httpClient.post(`${this.apiUrlPayment}/create`, customer);
   }
 }
