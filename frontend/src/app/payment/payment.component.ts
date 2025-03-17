@@ -184,6 +184,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.isLoading = false;
           if (response.url) {
+            localStorage.removeItem('customer');
+            localStorage.removeItem('cartHasItems');
             window.location.href = response.url;
           }
         },

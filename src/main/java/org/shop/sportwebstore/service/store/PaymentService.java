@@ -33,6 +33,7 @@ public class PaymentService {
     private final CartService cartService;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final OrderService orderService;
     private final UserService userService;
 
     @Value("${spring.stripe.secret}")
@@ -45,9 +46,11 @@ public class PaymentService {
     public String createPayment(OrderDto orderDto) {
         Customer customer = userService.findOrCreateCustomer(orderDto);
         Cart cart = cartService.getCart(customer.getUserId());
-        double shippingPrice = orderDto.getDeliveryTime().equals(DeliveryTime.STANDARD) ? 0 : 10;
-        long totalPrice = (long) ((calculateTotalPrice(cart) + shippingPrice) * 100);
-        return preparePaymentTemplate(orderDto, totalPrice);
+        double shippingPrice = orderDto.getDeliveryTime().equals(DeliveryTime.STANDARD) ? 0.0 : 10.0;
+        double totalPrice = ((calculateTotalPrice(cart) + shippingPrice));
+        orderService.createOrder(cart, customer, totalPrice);
+        cartService.deleteCart(customer.getUserId());
+        return preparePaymentTemplate(orderDto, (long) (totalPrice * 100));
     }
 
     private String preparePaymentTemplate(OrderDto orderDto, long totalPrice) {
