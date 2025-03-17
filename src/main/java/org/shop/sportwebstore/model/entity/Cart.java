@@ -2,6 +2,7 @@ package org.shop.sportwebstore.model.entity;
 
 import lombok.Data;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +11,13 @@ public class Cart {
     private String id;
     private String userId;
     private Map<String, Integer> products;
+    private boolean isOrderProcessing = false;
+    private Date lastModified = Date.from(java.time.Instant.now());
+
+    public void setOrderProcessing(boolean orderProcessing) {
+        this.isOrderProcessing = orderProcessing;
+        this.lastModified = Date.from(java.time.Instant.now());
+    }
 
     public Cart() {
         this.products = new HashMap<>();

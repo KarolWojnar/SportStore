@@ -53,33 +53,48 @@ export class PaymentComponent implements OnInit, OnDestroy {
   }
 
 
+  loadPaymentData() {
+    const storedCustomer = localStorage.getItem('customer');
+    if (storedCustomer) {
+      this.customer = JSON.parse(storedCustomer);
+      this.setValues();
+    } else {
+      this.isLoading = true;
+      this.storeService.checkout().subscribe({
+        next: (customer) => {
+          this.customer = customer.order;
+          localStorage.setItem('customer', JSON.stringify(customer.order));
+          this.setValues();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error fetching customer data:', err);
+        }
+      });
+    }
+  }
+
+  setValues() {
+    this.priceWithDelivery = ((this.customer.shippingPrice || 0.0) + (this.customer.totalPrice || 0));
+    if (this.customer.firstName) {
+      this.paymentForm.patchValue({
+        firstName: this.customer.firstName,
+        lastName: this.customer.lastName
+      });
+      if (this.customer.shippingAddress) {
+        this.paymentForm.patchValue({
+          address: this.customer.shippingAddress.address,
+          city: this.customer.shippingAddress.city,
+          zipCode: this.customer.shippingAddress.zipCode,
+          country: this.customer.shippingAddress.country
+        });
+      }
+    }
+  }
+
 
   ngOnInit(): void {
-    this.isLoading = true;
-    this.storeService.checkout().subscribe({
-      next: (customer) => {
-        this.customer = customer.order;
-        this.priceWithDelivery = ((this.customer.shippingPrice || 0) + (this.customer.totalPrice || 0));
-        if (this.customer.firstName) {
-          this.paymentForm.patchValue({
-            firstName: this.customer.firstName,
-            lastName: this.customer.lastName
-          });
-          if (this.customer.shippingAddress) {
-            this.paymentForm.patchValue({
-              address: this.customer.shippingAddress.address,
-              city: this.customer.shippingAddress.city,
-              zipCode: this.customer.shippingAddress.zipCode,
-              country: this.customer.shippingAddress.country
-            });
-          }
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching customer data:', err);
-      }
-    });
+    this.loadPaymentData();
   }
 
   proceedToPayment() {
@@ -91,6 +106,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
   cancelPayment() {
     this.storeService.cancelPayment().subscribe({
       next: () => {
+        localStorage.removeItem('customer');
         this.router.navigate(['/cart']);
       },
       error: (err) => {

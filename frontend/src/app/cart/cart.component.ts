@@ -116,6 +116,9 @@ export class CartComponent implements OnInit {
           this.router.navigate(['/checkout']);
         },
         error: (error) => {
+          if (error.error.message === 'Order is already processing.') {
+            this.router.navigate(['/checkout']);
+          }
           this.errorMessage = error.error.message;
         }
       });

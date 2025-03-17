@@ -1,9 +1,13 @@
 package org.shop.sportwebstore.service;
 
+import java.time.Duration;
+
 public final class ConstantStrings {
     public static final String ACTIVATION_EMAIL_SUBJECT = "Activate your account";
     public static final String RESET_PASSWORD_SUBJECT = "Reset your password";
     public static final String RATE_PRODUCT_TITLE = "Rate product";
+
+    public static final Duration ORDER_EXPIRATION = Duration.ofMinutes(30);
 
     public static final String ACTIVATION_EMAIL_BODY = """
         <html>
