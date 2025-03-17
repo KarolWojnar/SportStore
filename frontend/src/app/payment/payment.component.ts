@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { StoreService } from '../service/store.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CurrencyPipe, NgForOf, NgIf } from '@angular/common';
+import { CurrencyPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { CustomerDto } from '../model/user-dto';
 import { Router, RouterLink } from '@angular/router';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -10,10 +10,10 @@ import {
   faMobile,
   faMoneyBill,
   faMoneyBill1,
-  faMoneyBill1Wave,
   faWallet
 } from '@fortawesome/free-solid-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-payment',
@@ -25,7 +25,8 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     ReactiveFormsModule,
     NgIf,
     NgForOf,
-    FaIconComponent
+    FaIconComponent,
+    NgClass
   ],
   standalone: true,
   templateUrl: './payment.component.html',
@@ -40,25 +41,22 @@ export class PaymentComponent implements OnInit, OnDestroy {
     { id: 'REVOLUT_PAY', label: 'Revolut Pay', icon: faWallet},
     { id: 'MOBILEPAY', label: 'MobilePay', icon: faMobile }
   ];
-  paymentMethodIcons = {
-    "CARD": faCreditCard,
-    "P24": faMoneyBill,
-    "PAYPAL": faMoneyBill1,
-    "REVOLUT_PAY": faMoneyBill1Wave,
-    "MOBILEPAY": faMobile,
-  };
   paymentProceed = false;
   priceWithDelivery: number = 0;
   customer!: CustomerDto;
   paymentForm: FormGroup;
+  isDarkMode = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
   errorFormMessage: string | null = null;
   isLoading = false;
   price = 0;
+  @ViewChild('confirmationModal') confirmationModal!: TemplateRef<any>;
+
   constructor(private storeService: StoreService,
               private fb: FormBuilder,
-              private router: Router
+              private router: Router,
+              private modalService: NgbModal
   ) {
     this.paymentForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -76,6 +74,17 @@ export class PaymentComponent implements OnInit, OnDestroy {
     if (!this.paymentProceed) {
       this.cancelPayment();
     }
+  }
+
+  openConfirmationModal(content: TemplateRef<any>) {
+    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' }).result.then(
+      (result) => {
+        console.log('Modal closed with result:', result);
+      },
+      (reason) => {
+        console.log('Modal dismissed with reason:', reason);
+      }
+    );
   }
 
   checkPrice() {
@@ -131,9 +140,27 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.isDarkMode = localStorage.getItem('isDarkMode') === 'true';
     this.loadPaymentData();
     this.checkPrice();
     this.addDeliveryTypeListener();
+  }
+
+  confirmPayment(modal: any) {
+    if (this.paymentForm.valid) {
+      modal.close();
+      this.proceedToPayment();
+    } else {
+      this.errorFormMessage = 'Please fill in all required fields.';
+    }
+  }
+
+  pay() {
+    if (this.paymentForm.valid) {
+      this.openConfirmationModal(this.confirmationModal);
+    } else {
+      this.errorFormMessage = 'Please fill in all required fields.';
+    }
   }
 
   proceedToPayment() {
@@ -142,6 +169,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
       this.paymentProceed = true;
       this.errorFormMessage = null;
       this.errorMessage = null;
+
       this.customer.firstName = this.paymentForm.value.firstName;
       this.customer.lastName = this.paymentForm.value.lastName;
       this.customer.deliveryTime = this.deliveryType;
@@ -153,9 +181,11 @@ export class PaymentComponent implements OnInit, OnDestroy {
         country: this.paymentForm.value.country
       };
       this.storeService.goToPayment(this.customer).subscribe({
-        next: () => {
+        next: (response) => {
           this.isLoading = false;
-          this.successMessage = 'Payment processed successfully!';
+          if (response.url) {
+            window.location.href = response.url;
+          }
         },
         error: (err) => {
           console.error('Error updating customer:', err);

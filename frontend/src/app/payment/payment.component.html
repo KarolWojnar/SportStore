@@ -4,7 +4,6 @@
   <div *ngIf="successMessage" class="alert alert-success">
     {{ successMessage }}
   </div>
-
   <div *ngIf="errorMessage" class="alert alert-danger">
     {{ errorMessage }}
   </div>
@@ -136,7 +135,7 @@
             <button type="button" class="btn btn-outline-secondary mb-2 w-100" routerLink="/cart" [disabled]="isLoading">
               Back to Cart
             </button>
-            <button type="submit" class="btn btn-success w-100 " [disabled]="isLoading">
+            <button type="button" (click)="pay()" class="btn btn-success w-100" [disabled]="isLoading">
               Complete Purchase
             </button>
             <div class="alert bg-warning text-center bg-opacity-10 mt-3">
@@ -148,3 +147,35 @@
     </div>
   </form>
 </div>
+<ng-template #confirmationModal let-modal>
+  <div class="modal-header" [ngClass]="{'is-dark-mode': isDarkMode}">
+    <h5 class="modal-title">Confirm Your Order</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [ngClass]="{'is-dark-mode': isDarkMode}">
+    <h6>Order Summary</h6>
+    <div class="d-flex justify-content-between mb-1">
+      <span>Subtotal:</span>
+      <span>{{ price | currency:'EUR' }}</span>
+    </div>
+    <div class="d-flex justify-content-between mb-1">
+      <span>Shipping:</span>
+      <span>{{ deliveryType === 'EXPRESS' ? '€10.00' : 'Free' }}</span>
+    </div>
+    <hr class="my-2">
+    <div class="d-flex justify-content-between mb-2">
+      <strong>Total:</strong>
+      <strong>{{ priceWithDelivery | currency:'EUR' }}</strong>
+    </div>
+
+    <h6 class="mt-3">Billing Details</h6>
+    <p><strong>Name:</strong> {{ paymentForm.value.firstName }} {{ paymentForm.value.lastName }}</p>
+    <p><strong>Address:</strong> {{ paymentForm.value.address }}, {{ paymentForm.value.city }}, {{ paymentForm.value.zipCode }}, {{ paymentForm.value.country }}</p>
+
+    <p class="text-bg-warning w-100 rounded-2 text-center">Are you sure you want to proceed with this order?</p>
+  </div>
+  <div class="modal-footer" [ngClass]="{'is-dark-mode': isDarkMode}">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-success" (click)="confirmPayment(modal)">Confirm</button>
+  </div>
+</ng-template>

@@ -85,3 +85,13 @@
     margin-top: 20px;
   }
 }
+
+.modal-header, .modal-body, .modal-footer {
+  &.is-dark-mode {
+    background-color: rgba(25, 25, 25, 0.78) !important;
+  }
+}
+
+.is-dark-mode {
+  background-color: rgba(25, 25, 25, 0.78)!important;
+}

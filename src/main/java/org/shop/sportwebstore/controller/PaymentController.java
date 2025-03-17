@@ -20,11 +20,12 @@ public class PaymentController {
 
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
-    public String createPayment(@RequestBody OrderDto orderDto) {
+    public ResponseEntity<?> createPayment(@RequestBody OrderDto orderDto) {
         try {
-            return paymentService.createPayment(orderDto);
+            String paymentUrl = paymentService.createPayment(orderDto);
+            return ResponseEntity.ok(Map.of("url", paymentUrl));
         } catch (Exception e) {
-            return e.getMessage();
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 

@@ -117,7 +117,7 @@ export class StoreService {
     return this.httpClient.get<{response: any}>(`${this.apiUrl}/cart/valid`);
   }
 
-  goToPayment(customer: CustomerDto) {
-    return this.httpClient.post(`${this.apiUrlPayment}/create`, customer);
+  goToPayment(customer: CustomerDto): Observable<{url: string}> {
+    return this.httpClient.post<{url: string}>(`${this.apiUrlPayment}/create`, customer);
   }
 }
