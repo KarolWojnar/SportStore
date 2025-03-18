@@ -1,0 +1,36 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Your Orders</h2>
+
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && orders.length === 0" class="alert alert-info">
+    You have no orders yet.
+  </div>
+
+  <div *ngIf="!isLoading && orders.length > 0" class="list-group">
+    <div *ngFor="let order of orders" class="cart-order px-2 py-1 border-2 mb-3 shadow rounded-3">
+      <div class="d-flex justify-content-between">
+        <div>
+          <p class="mb-1">Order ID: {{ order.id }}</p>
+          <small>Order Date: {{ order.orderDate | date: 'dd-MM-YYYY, HH:mm' }}</small>
+        </div>
+        <div>
+          <small class="rounded-4 px-2" [ngClass]="getStatusClass(order.status)" style="font-size: 0.8rem; font-weight: bold">{{ order.status }}</small>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between">
+        <div class="mt-2">
+          <p class="mb-1"><strong>Total Price:</strong> {{ order.totalPrice | currency: 'EUR' }}</p>
+        </div>
+        <div class="d-flex justify-content-end align-items-center">
+          <a [routerLink]="['/orders', order.id]" class="btn btn-outline-primary mx-2 btn-sm rounded-2">View Details</a>
+          <a [routerLink]="['/checkout', order.id]" class="btn btn-success btn-sm rounded-2">Pay</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

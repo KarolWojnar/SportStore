@@ -18,3 +18,11 @@ export interface ProductCart {
   quantity: number;
   totalQuantity: number;
 }
+
+export interface OrderBaseInfo {
+  id: string;
+  orderDate: Date;
+  deliveryDate: Date;
+  totalPrice: number;
+  status: string;
+}

@@ -62,6 +62,7 @@ public class Order {
                 if (random == 13) {
                     this.setNewStatus(OrderStatus.REFUNDED);
                 }
+                this.setDeliveryDate(Date.from(java.time.Instant.now()));
             }
         }
     }

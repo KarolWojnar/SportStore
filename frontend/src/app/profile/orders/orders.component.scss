@@ -1,0 +1,43 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cart-order {
+  transition: box-shadow 0.3s ease;
+  background-color: rgba(176, 176, 248, 0.12);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(200, 171, 171, 0.87);
+  }
+}
+
+.created {
+  background-color: #007bff;
+  color: white;
+}
+
+.processing {
+  background-color: #ffc107;
+  color: black;
+}
+
+.shipping {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.delivered {
+  background-color: #28a745;
+  color: white;
+}
+
+.annulled {
+  background-color: #dc3545;
+  color: white;
+}
+
+.returned {
+  background-color: #6c757d;
+  color: white;
+}

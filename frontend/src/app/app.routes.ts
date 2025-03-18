@@ -16,6 +16,7 @@ import { NewPasswordComponent } from './auth/new-password/new-password.component
 import { PaymentComponent } from './payment/payment.component';
 import { OrderComponent } from './payment/order/order.component';
 import { OrderInfoComponent } from './profile/order-info/order-info.component';
+import { OrdersComponent } from './profile/orders/orders.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -25,6 +26,7 @@ export const routes: Routes = [
   { path: 'reset-password', component: RecoveryPasswordComponent, canActivate: [NoAuthGuard] },
   { path: 'reset-password/:resetCode', component: NewPasswordComponent, canActivate: [NoAuthGuard] },
   { path: 'products', component: ProductComponent, canActivate: [AuthGuard] },
+  { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
   { path: 'products/:id', component: DetailsComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'order-info/:id', component: OrderInfoComponent, canActivate: [AuthGuard] },

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, ProductCart } from '../model/product';
+import { OrderBaseInfo, Product, ProductCart } from '../model/product';
 import { AuthStateService } from './auth-state.service';
 import { CustomerDto } from '../model/user-dto';
 
@@ -11,6 +11,7 @@ import { CustomerDto } from '../model/user-dto';
 export class StoreService {
   private apiUrl = 'http://localhost:8080/api/store';
   private apiUrlPayment = 'http://localhost:8080/api/payment';
+  private apiUrlOrder = 'http://localhost:8080/api/orders';
 
   constructor(private httpClient: HttpClient,
               private authState: AuthStateService) { }
@@ -119,5 +120,9 @@ export class StoreService {
 
   goToPayment(customer: CustomerDto): Observable<{url: string}> {
     return this.httpClient.post<{url: string}>(`${this.apiUrlPayment}/create`, customer);
+  }
+
+  getUserOrders(): Observable<{orders: OrderBaseInfo[]}> {
+    return this.httpClient.get<{orders: OrderBaseInfo[]}>(`${this.apiUrlOrder}`);
   }
 }
