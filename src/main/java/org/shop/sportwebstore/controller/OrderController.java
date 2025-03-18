@@ -5,10 +5,7 @@ import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.service.store.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -25,6 +22,16 @@ public class OrderController {
     public ResponseEntity<?> getAllOrdersByUser() {
         try {
             return ResponseEntity.ok(Map.of("orders", orderService.getUserOrders()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrderById(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(Map.of("order", orderService.getOrderById(id)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

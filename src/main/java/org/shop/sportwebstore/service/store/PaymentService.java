@@ -72,7 +72,7 @@ public class PaymentService {
                             .setMode(com.stripe.param.checkout.SessionCreateParams.Mode.PAYMENT)
                             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.valueOf(orderDto.getPaymentMethod().name()))
                             .setCustomerEmail(orderDto.getEmail())
-                            .setSuccessUrl(frontUrl + "order?paid=true")
+                            .setSuccessUrl(frontUrl + "order?paid=true&orderId=" + orderId)
                             .setCancelUrl(frontUrl + "order?paid=false&orderId=" + orderId)
                             .addLineItem(
                                     com.stripe.param.checkout.SessionCreateParams.LineItem.builder()

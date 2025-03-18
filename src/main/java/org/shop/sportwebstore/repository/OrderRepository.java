@@ -13,4 +13,5 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findAllByStatusIsNotAndLastModifiedBefore(OrderStatus status, Date lastModified);
     Optional<Order> findBySessionId(String sessionId);
     List<Order> findAllByUserId(String userId);
+    Optional<Order> findByIdAndUserId(String id, String id1);
 }

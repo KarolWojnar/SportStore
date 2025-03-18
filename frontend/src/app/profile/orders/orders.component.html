@@ -16,7 +16,8 @@
       <div class="d-flex justify-content-between">
         <div>
           <p class="mb-1">Order ID: {{ order.id }}</p>
-          <small>Order Date: {{ order.orderDate | date: 'dd-MM-YYYY, HH:mm' }}</small>
+          <small>Order Date: {{ order.orderDate | date: 'dd-MM-YYYY, HH:mm' }}</small><br>
+          <small *ngIf="order.deliveryDate">Delivery Date: {{ order.deliveryDate | date: 'dd-MM-YYYY, HH:mm' }}</small>
         </div>
         <div>
           <small class="rounded-4 px-2" [ngClass]="getStatusClass(order.status)" style="font-size: 0.8rem; font-weight: bold">{{ order.status }}</small>
@@ -27,7 +28,7 @@
           <p class="mb-1"><strong>Total Price:</strong> {{ order.totalPrice | currency: 'EUR' }}</p>
         </div>
         <div class="d-flex justify-content-end align-items-center">
-          <a [routerLink]="['/orders', order.id]" class="btn btn-outline-primary mx-2 btn-sm rounded-2">View Details</a>
+          <a [routerLink]="['/order-info', order.id]" class="btn btn-outline-primary mx-2 btn-sm rounded-2">View Details</a>
           <a [routerLink]="['/checkout', order.id]" class="btn btn-success btn-sm rounded-2">Pay</a>
         </div>
       </div>

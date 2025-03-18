@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../service/store.service';
-import { OrderBaseInfo } from '../../model/product';
+import { OrderBaseInfo } from '../../model/order';
 import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 

@@ -1,1 +1,60 @@
-<p>order-info works!</p>
+<div class="container mt-4">
+  <h2 class="mb-4">Order Details</h2>
+
+  <div *ngIf="!order" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="order" class="order-details">
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="p-3 border rounded">
+          <h4 class="mb-3">Order Information</h4>
+          <p><strong>Order ID:</strong> {{ order.id }}</p>
+          <p><strong>Order Date:</strong> {{ order.orderDate | date: 'dd-MM-YYYY, HH:mm' }}</p>
+          <p *ngIf="order.deliveryDate"><strong>Order Date:</strong> {{ order.deliveryDate | date: 'dd-MM-YYYY, HH:mm' }}</p>
+          <p><strong>Status:</strong> <span class="badge" [ngClass]="getStatusClass(order.status)">{{ order.status }}</span></p>
+          <p><strong>Total Price:</strong> {{ order.totalPrice | currency: 'EUR' }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <div class="p-3 border rounded">
+          <h4 class="mb-3">Customer Information</h4>
+          <p><strong>Name:</strong> {{ order.firstName }} {{ order.lastName }}</p>
+          <p><strong>Email:</strong> {{ order.email }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <div class="p-3 border rounded">
+          <h4 class="mb-3">Shipping Address</h4>
+          <p><strong>Address:</strong> {{ order.shippingAddress.address }}</p>
+          <p><strong>City:</strong> {{ order.shippingAddress.city }}</p>
+          <p><strong>Zip Code:</strong> {{ order.shippingAddress.zipCode }}</p>
+          <p><strong>Country:</strong> {{ order.shippingAddress.country }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="p-3 border rounded">
+          <h4 class="mb-3">Products</h4>
+          <div *ngFor="let product of order.productsDto" class="product-item mb-3 border-bottom rounded pb-2">
+            <div class="d-flex align-items-center">
+              <img [src]="'http://localhost:8080/' + product.image" alt="{{ product.name }}" class="rounded" style="width: 100px; height: auto">
+              <div class="ms-3">
+                <h5>{{ product.name }}</h5>
+                <p><strong>Price:</strong> {{ product.price | currency: 'EUR' }}</p>
+                <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

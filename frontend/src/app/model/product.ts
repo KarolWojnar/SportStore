@@ -1,3 +1,5 @@
+
+
 export interface Product {
     id: string;
     name: string;
@@ -19,10 +21,4 @@ export interface ProductCart {
   totalQuantity: number;
 }
 
-export interface OrderBaseInfo {
-  id: string;
-  orderDate: Date;
-  deliveryDate: Date;
-  totalPrice: number;
-  status: string;
-}
+

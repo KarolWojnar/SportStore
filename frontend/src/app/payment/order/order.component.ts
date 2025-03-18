@@ -15,7 +15,7 @@ import { NgIf } from '@angular/common';
 export class OrderComponent implements OnInit {
 
   isPaid = false;
-  orderId: number | null = null;
+  orderId: string | null = null;
 
   constructor(private route: ActivatedRoute) {
   }
@@ -23,7 +23,7 @@ export class OrderComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.isPaid = params['paid'] === 'true';
-      this.orderId = params['orderId'] ? +params['orderId'] : null;
+      this.orderId = params['orderId'] ? params['orderId'] : null;
 
     });
   }

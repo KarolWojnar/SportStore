@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { OrderBaseInfo, Product, ProductCart } from '../model/product';
 import { AuthStateService } from './auth-state.service';
 import { CustomerDto } from '../model/user-dto';
+import { Product, ProductCart } from '../model/product';
+import { Order, OrderBaseInfo } from '../model/order';
 
 @Injectable({
   providedIn: 'root'
@@ -124,5 +125,9 @@ export class StoreService {
 
   getUserOrders(): Observable<{orders: OrderBaseInfo[]}> {
     return this.httpClient.get<{orders: OrderBaseInfo[]}>(`${this.apiUrlOrder}`);
+  }
+
+  getOrderById(orderId: string) {
+    return this.httpClient.get<{order: Order}>(`${this.apiUrlOrder}/${orderId}`);
   }
 }
