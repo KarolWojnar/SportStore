@@ -1,0 +1,17 @@
+<div class="container p-5">
+  <div *ngIf="isPaid" class="alert alert-success">
+    <h4 class="alert-heading">Payment Successful!</h4>
+    <p>Thank you for your purchase. Your payment has been successfully processed.</p>
+    <p>You will receive an email confirmation shortly with the details of your order.</p>
+    <hr>
+    <p class="mb-0">You can track your order in your <a routerLink="/profile">profile</a>.</p>
+  </div>
+
+  <div *ngIf="!isPaid" class="alert alert-danger">
+    <h4 class="alert-heading">Payment Failed!</h4>
+    <p>Unfortunately, your payment was not successful. Please try again.</p>
+    <p>You have <strong>1 day</strong> to complete the payment.</p>
+    <hr>
+    <p class="mb-0">You can retry the payment in your <a routerLink="/profile">profile</a>.</p>
+  </div>
+</div>

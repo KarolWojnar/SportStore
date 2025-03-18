@@ -17,6 +17,7 @@ public class SportWebStoreApplication {
         System.setProperty("FORUM_MAIL_PASSWORD", Objects.requireNonNull(dotenv.get("FORUM_MAIL_PASSWORD")));
         System.setProperty("FORUM_MAIL_USERNAME", Objects.requireNonNull(dotenv.get("FORUM_MAIL_USERNAME")));
         System.setProperty("STRIPE_SECRET", Objects.requireNonNull(dotenv.get("STRIPE_SECRET")));
+        System.setProperty("WEBHOOK_KEY", Objects.requireNonNull(dotenv.get("WEBHOOK_KEY")));
         SpringApplication.run(SportWebStoreApplication.class, args);
     }
 

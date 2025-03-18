@@ -14,6 +14,8 @@ import { DetailsComponent } from './product/details/details.component';
 import { RecoveryPasswordComponent } from './auth/recovery-password/recovery-password.component';
 import { NewPasswordComponent } from './auth/new-password/new-password.component';
 import { PaymentComponent } from './payment/payment.component';
+import { OrderComponent } from './payment/order/order.component';
+import { OrderInfoComponent } from './profile/order-info/order-info.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -25,7 +27,9 @@ export const routes: Routes = [
   { path: 'products', component: ProductComponent, canActivate: [AuthGuard] },
   { path: 'products/:id', component: DetailsComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  { path: 'order-info/:id', component: OrderInfoComponent, canActivate: [AuthGuard] },
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
   { path: 'checkout', component: PaymentComponent, canActivate: [AuthGuard] },
+  { path: 'order', component: OrderComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [RoleGuard] }
 ];

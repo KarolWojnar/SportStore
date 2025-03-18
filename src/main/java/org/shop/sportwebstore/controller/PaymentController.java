@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.service.store.PaymentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.Map;
 @RequestMapping("/api/payment")
 public class PaymentController {
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
     private final PaymentService paymentService;
 
     @PostMapping("/create")
@@ -43,6 +46,18 @@ public class PaymentController {
             paymentService.cancelPayment();
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<?> webhook(@RequestBody String payload,
+                                     @RequestHeader("Stripe-Signature") String signature) {
+        try {
+            paymentService.webhook(payload, signature);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.info("Error during webhook: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
