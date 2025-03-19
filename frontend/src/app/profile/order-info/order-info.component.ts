@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../service/store.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Order } from '../../model/order';
 import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-order-info',
@@ -11,7 +12,9 @@ import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common'
     NgForOf,
     NgClass,
     DatePipe,
-    NgIf
+    NgIf,
+    RouterLink,
+    MatProgressSpinner
   ],
   standalone: true,
   templateUrl: './order-info.component.html',
@@ -20,9 +23,26 @@ import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common'
 export class OrderInfoComponent implements OnInit {
 
   order!: Order;
+  isLoading = false;
+  errorMessage: string | null = null;
+  timeToDelete: string = '24 hours';
 
   constructor(private storeService: StoreService,
               private route: ActivatedRoute) {
+  }
+
+  calculateTimeToDelete(): void {
+    const orderDate = new Date(this.order.orderDate);
+    const currentDate = new Date();
+    const timeDifference = currentDate.getTime() - orderDate.getTime();
+    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
+
+    if (hoursDifference < 24) {
+      const remainingHours = 24 - hoursDifference;
+      this.timeToDelete = `${remainingHours} hours`;
+    } else {
+      this.timeToDelete = '24 hours';
+    }
   }
 
   ngOnInit(): void {
@@ -31,7 +51,9 @@ export class OrderInfoComponent implements OnInit {
       this.storeService.getOrderById(orderId).subscribe({
         next: (response) => {
           this.order = response.order;
-          console.log(this.order);
+          if (this.order.status === 'CREATED') {
+            this.calculateTimeToDelete();
+          }
         },
         error: (err) => {
           console.error('Error fetching order:', err);
@@ -59,4 +81,22 @@ export class OrderInfoComponent implements OnInit {
     }
   }
 
+  payForOrder() {
+    if (this.order.status === 'CREATED') {
+      this.isLoading = true;
+      this.storeService.goToRepayment(this.order.id).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          if (response.url) {
+            window.location.href = response.url;
+          }
+        },
+        error: (err) => {
+          console.error('Error updating customer:', err);
+          this.isLoading = false;
+          this.errorMessage = 'An error occurred while processing payment. Try again later.';
+        }
+      });
+    }
+  }
 }

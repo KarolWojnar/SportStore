@@ -58,10 +58,16 @@ public class PaymentService {
         Cart cart = cartService.getCart(customer.getUserId());
         double shippingPrice = orderDto.getDeliveryTime().equals(DeliveryTime.STANDARD) ? 0.0 : 10.0;
         double totalPrice = ((calculateTotalPrice(cart) + shippingPrice)) * 100;
-        String orderId = orderService.createOrder(cart, customer, totalPrice);
+        String orderId = orderService.createOrder(cart, customer, totalPrice, orderDto.getPaymentMethod());
         String url = preparePaymentTemplate(orderDto, (long) (totalPrice), orderId);
         cartService.deleteCart(customer.getUserId());
         return url;
+    }
+
+    @Transactional
+    public String createRepayment(String orderId) {
+        OrderDto orderDto = orderService.getOrderById(orderId);
+        return preparePaymentTemplate(orderDto, (long) (orderDto.getTotalPrice() * 100), orderId);
     }
 
     private String preparePaymentTemplate(OrderDto orderDto, long totalPrice, String orderId) {
@@ -165,4 +171,5 @@ public class PaymentService {
             throw new UserException("Error during payment." + e.getMessage());
         }
     }
+
 }

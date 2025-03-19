@@ -1,5 +1,5 @@
 <div class="container mt-4">
-  <h2 class="mb-4">Order Details</h2>
+  <h4 class="mb-4"><a routerLink="/orders" class="text-reset">Orders</a> -> Details</h4>
 
   <div *ngIf="!order" class="d-flex justify-content-center align-items-center" style="height: 200px;">
     <div class="spinner-border text-primary" role="status">
@@ -21,10 +21,22 @@
       </div>
 
       <div class="col-md-4 mb-3">
-        <div class="p-3 border rounded">
-          <h4 class="mb-3">Customer Information</h4>
-          <p><strong>Name:</strong> {{ order.firstName }} {{ order.lastName }}</p>
-          <p><strong>Email:</strong> {{ order.email }}</p>
+        <div *ngIf="isLoading" class="alert d-flex bg-black bg-opacity-10 justify-content-center align-items-center">
+          <mat-progress-spinner mode="indeterminate" color="primary"></mat-progress-spinner>
+        </div>
+        <div *ngIf="!isLoading" >
+          <div class="p-3 border rounded">
+            <h4 class="mb-3">Customer Information</h4>
+            <p><strong>Name:</strong> {{ order.firstName }} {{ order.lastName }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+          </div>
+          <div *ngIf="errorMessage" class="alert alert-danger mt-2 mb-0">
+            {{ errorMessage }}
+          </div>
+          <div *ngIf="order.status === 'CREATED'">
+            <a (click)="payForOrder()" class="btn btn-success btn-sm rounded-2 mt-2 w-100">Pay for the order</a>
+            <small class="text-danger text-decoration-underline d-flex justify-content-center">You have {{ timeToDelete }} to pay, otherwise order will be deleted!</small>
+          </div>
         </div>
       </div>
 

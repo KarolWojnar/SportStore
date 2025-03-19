@@ -1,10 +1,14 @@
 <div class="container mt-4">
-  <h2 class="mb-4">Your Orders</h2>
+  <h4 class="mb-4">Orders</h4>
 
   <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+    {{ errorMessage }}
   </div>
 
   <div *ngIf="!isLoading && orders.length === 0" class="alert alert-info">
@@ -27,9 +31,12 @@
         <div class="mt-2">
           <p class="mb-1"><strong>Total Price:</strong> {{ order.totalPrice | currency: 'EUR' }}</p>
         </div>
-        <div class="d-flex justify-content-end align-items-center">
-          <a [routerLink]="['/order-info', order.id]" class="btn btn-outline-primary mx-2 btn-sm rounded-2">View Details</a>
-          <a [routerLink]="['/checkout', order.id]" class="btn btn-success btn-sm rounded-2">Pay</a>
+        <div *ngIf="isLoadingPayment && payingId === order.id" class="alert d-flex bg-black bg-opacity-10 justify-content-center align-items-center">
+          <mat-progress-spinner mode="indeterminate" color="primary"></mat-progress-spinner>
+        </div>
+        <div *ngIf="!isLoadingPayment && payingId !== order.id" class="d-flex justify-content-end align-items-center">
+          <a *ngIf="order.status === 'CREATED'" (click)="payForOrder(order.id)" class="btn btn-outline-success btn-sm rounded-2 mx-2">Pay</a>
+          <a [routerLink]="['/orders', order.id]" class="btn btn-primary btn-sm rounded-2">View Details</a>
         </div>
       </div>
     </div>

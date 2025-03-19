@@ -1,5 +1,6 @@
 package org.shop.sportwebstore.service.store;
 
+import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.PaymentException;
@@ -33,12 +34,13 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
 
-    public String createOrder(Cart cart, Customer customer, double totalPrice) {
+    public String createOrder(Cart cart, Customer customer, double totalPrice, SessionCreateParams.PaymentMethodType paymentMethod) {
         Order order = orderRepository.save(new Order(
                 cart.getProducts(),
                 customer.getUserId(),
                 customer.getShippingAddress(),
-                Math.round(totalPrice) / 100.0
+                Math.round(totalPrice) / 100.0,
+                paymentMethod.name()
             )
         );
         return order.getId();
@@ -83,6 +85,7 @@ public class OrderService {
                 .lastName(customer.getLastName())
                 .email(user.getEmail())
                 .status(order.getStatus())
+                .paymentMethod(SessionCreateParams.PaymentMethodType.valueOf(order.getPaymentMethod()))
                 .shippingAddress(order.getOrderAddress())
                 .totalPrice(order.getTotalPrice())
                 .deliveryDate(order.getDeliveryDate())

@@ -31,6 +31,17 @@ public class PaymentController {
         }
     }
 
+    @PostMapping("/repay")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> createRepayment(@RequestBody String orderId) {
+        try {
+            String paymentUrl = paymentService.createRepayment(orderId);
+            return ResponseEntity.ok(Map.of("url", paymentUrl));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     @GetMapping("/summary")
     public ResponseEntity<?> getSummary() {
         try {

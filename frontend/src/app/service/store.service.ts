@@ -123,6 +123,10 @@ export class StoreService {
     return this.httpClient.post<{url: string}>(`${this.apiUrlPayment}/create`, customer);
   }
 
+  goToRepayment(orderId: string): Observable<{url: string}> {
+    return this.httpClient.post<{url: string}>(`${this.apiUrlPayment}/repay`, orderId);
+  }
+
   getUserOrders(): Observable<{orders: OrderBaseInfo[]}> {
     return this.httpClient.get<{orders: OrderBaseInfo[]}>(`${this.apiUrlOrder}`);
   }

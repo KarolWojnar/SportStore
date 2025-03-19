@@ -37,14 +37,16 @@ public class Order {
     private Date orderDate = Date.from(java.time.Instant.now());
     private Date lastModified = Date.from(java.time.Instant.now());
     private Date deliveryDate;
+    private String paymentMethod;
     private double totalPrice;
     private String sessionId;
 
-    public Order(Map<String, Integer> products, String userId, ShippingAddress address, double price) {
+    public Order(Map<String, Integer> products, String userId, ShippingAddress address, double price, String paymentMethod) {
         this.products = products;
         this.userId = userId;
         this.orderAddress = address;
         this.totalPrice = price;
+        this.paymentMethod = paymentMethod;
 
     }
 

@@ -3,6 +3,7 @@ import { StoreService } from '../../service/store.service';
 import { OrderBaseInfo } from '../../model/order';
 import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-orders',
@@ -12,7 +13,8 @@ import { RouterLink } from '@angular/router';
     CurrencyPipe,
     DatePipe,
     NgForOf,
-    NgIf
+    NgIf,
+    MatProgressSpinner
   ],
   standalone: true,
   templateUrl: './orders.component.html',
@@ -22,6 +24,9 @@ export class OrdersComponent implements OnInit {
 
   orders: OrderBaseInfo[] = [];
   isLoading = true;
+  isLoadingPayment = false;
+  errorMessage: string | null = null;
+  payingId = 'XX';
 
   constructor(private storeService: StoreService) {
   }
@@ -58,4 +63,25 @@ export class OrdersComponent implements OnInit {
     }
   }
 
+  payForOrder(id: string) {
+    if (this.orders.find(order => order.id === id)?.status === 'CREATED') {
+      this.isLoadingPayment = true;
+      this.payingId = id;
+      this.storeService.goToRepayment(id).subscribe({
+        next: (response) => {
+          this.isLoadingPayment = false;
+          this.payingId = 'XX';
+          if (response.url) {
+            window.location.href = response.url;
+          }
+        },
+        error: (err) => {
+          console.error('Error updating customer:', err);
+          this.payingId = 'XX';
+          this.isLoadingPayment = false;
+          this.errorMessage = 'An error occurred while processing payment. Try again later.';
+        }
+      });
+    }
+  }
 }
