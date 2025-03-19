@@ -10,6 +10,7 @@ import org.shop.sportwebstore.model.entity.Order;
 import org.shop.sportwebstore.model.entity.Product;
 import org.shop.sportwebstore.repository.*;
 import org.shop.sportwebstore.service.store.CartService;
+import org.shop.sportwebstore.service.store.OrderService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class SchedulerService {
     private final ProductRepository productRepository;
     private final CartService cartService;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     @Scheduled(cron = "0 0 0 * * *")
     public void clearInactive() {
@@ -47,7 +49,7 @@ public class SchedulerService {
         userRepository.deleteAllByIdIn(ids);
     }
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 */15 * * * *")
     public void clearExpiredOrderCart() {
         List<Cart> carts = cartService.findCartsByIsOrderProcessing(true, Date.from(Instant.now()));
         carts.forEach(cart -> {
@@ -65,9 +67,21 @@ public class SchedulerService {
                 .findAllByStatusIsNotAndLastModifiedBefore(OrderStatus.CREATED, minusTwoDays);
         for (Order order : orders) {
             order.setNextStatus();
+            if (order.getStatus() == OrderStatus.DELIVERED) {
+                //todo: send email to rate products
+            }
         }
         log.info("Changed {} orders status. date: {}", orders.size(),
                 Date.from(Instant.now()));
         orderRepository.saveAll(orders);
+    }
+
+    @Scheduled(cron = "0 */15 * * * *")
+    public void deleteNotPaidOrders() {
+        Date minusDays = new Date(System.currentTimeMillis() - ConstantStrings.ORDER_DELETE.toMillis());
+        List<Order> orders = orderRepository.findAllByStatusAndOrderDateBefore(OrderStatus.CREATED, minusDays);
+        orderService.handleNotPaidOrders(orders);
+        log.info("Deleted {} orders. date: {}", orders.size(),
+                Date.from(Instant.now()));
     }
 }

@@ -16,13 +16,14 @@ public class Product {
     private String id;
     @Indexed
     private String name;
+    @Indexed
     private double price;
     private int amountLeft;
     private String description;
     private String imageUrl;
 
     /**
-     * integer - amount of user who  rated
+     * integer - amount of user who rated
      * double - rating of product
      */
     private Map<Integer, Double> ratings;

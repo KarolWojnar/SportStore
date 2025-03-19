@@ -20,6 +20,15 @@ services:
     volumes:
       - redis-data:/data
 
+#  stripe:
+#    image: 'stripe/stripe-cli:latest'
+#    container_name: stripe
+#    environment:
+#      - STRIPE_API_KEY=whsec_37075ac283e1e6a9904f7037f25cf6277d2943a7933c60d8e25f6a4140e01331
+#    command: listen --forward-to host.docker.internal:8080/api/payment/webhook
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+
 volumes:
   mongo-data:
   redis-data:

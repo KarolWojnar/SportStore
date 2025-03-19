@@ -24,7 +24,7 @@
       </ul>
       <ul class="navbar-nav ms-auto">
         <li *ngIf="isLoggedIn" class="nav-item">
-          <a class="nav-link cart-link" routerLink="/cart">
+          <a class="nav-link cart-link hover-item" routerLink="/cart">
             <fa-icon class="cart-icon" [icon]="faShoppingCart"></fa-icon>
             <span *ngIf="cartHasItems" class="cart-dot"></span>
           </a>

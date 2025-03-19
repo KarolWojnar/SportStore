@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { UserDto } from '../model/user-dto';
+import { UserDetails, UserDto } from '../model/user-dto';
 import { catchError, Observable, of, tap } from 'rxjs';
 import { AuthStateService } from './auth-state.service';
 
@@ -81,5 +81,9 @@ export class AuthService {
 
   resetPassword(password: string, confirmPassword: string, code: string) {
     return this.httpClient.post<{response: any}>(`${this.apiUrl}/auth/reset-password`, {password, confirmPassword, code});
+  }
+
+  getUserInfo(): Observable<{ user: UserDetails }> {
+    return this.httpClient.get<{ user: UserDetails }>(`${this.apiUrl}/users`);
   }
 }

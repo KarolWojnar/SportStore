@@ -36,7 +36,7 @@
         </div>
         <div *ngIf="!isLoadingPayment && payingId !== order.id" class="d-flex justify-content-end align-items-center">
           <a *ngIf="order.status === 'CREATED'" (click)="payForOrder(order.id)" class="btn btn-outline-success btn-sm rounded-2 mx-2">Pay</a>
-          <a [routerLink]="['/orders', order.id]" class="btn btn-primary btn-sm rounded-2">View Details</a>
+          <a [routerLink]="['/profile/orders', order.id]" class="btn btn-primary btn-sm rounded-2">View Details</a>
         </div>
       </div>
     </div>

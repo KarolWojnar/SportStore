@@ -1,0 +1,100 @@
+<!-- profile/profile-edit/profile-edit.component.html -->
+<div class="container">
+  <h2 class="mb-4">Edit Profile</h2>
+
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="edit-form">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="p-4 border rounded shadow-sm">
+          <div class="d-flex justify-content-between">
+            <h4 class="mb-3">Personal Information</h4>
+            <a class="text-reset reset-button" (click)="resetDataUser()"><fa-icon [icon]="faArrowRotateRight"></fa-icon></a>
+          </div>
+
+          <div class="mb-3">
+            <label for="firstName" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="firstName" formControlName="firstName">
+            <div *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched" class="text-danger">
+              First Name is required
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="lastName" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="lastName" formControlName="lastName">
+            <div *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched" class="text-danger">
+              Last Name is required
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control disabled" id="email" formControlName="email">
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4" formGroupName="shippingAddress">
+        <div class="p-4 border rounded shadow-sm">
+          <div class="d-flex justify-content-between">
+            <h4 class="mb-3">Shipping Address</h4>
+            <a class="text-reset reset-button" (click)="resetDataCustomer()"><fa-icon [icon]="faArrowRotateRight"></fa-icon></a>
+          </div>
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <input type="text" class="form-control" id="address" formControlName="address">
+            <div *ngIf="profileForm.get('shippingAddress.address')?.invalid && profileForm.get('shippingAddress.address')?.touched" class="text-danger">
+              Address is required
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="city" class="form-label">City</label>
+            <input type="text" class="form-control" id="city" formControlName="city">
+            <div *ngIf="profileForm.get('shippingAddress.city')?.invalid && profileForm.get('shippingAddress.city')?.touched" class="text-danger">
+              City is required
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="country" class="form-label">Country</label>
+            <input type="text" class="form-control" id="country" formControlName="country">
+            <div *ngIf="profileForm.get('shippingAddress.country')?.invalid && profileForm.get('shippingAddress.country')?.touched" class="text-danger">
+              Country is required
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="zipCode" class="form-label">Zip Code</label>
+            <input type="text" class="form-control" id="zipCode" formControlName="zipCode">
+            <div *ngIf="profileForm.get('shippingAddress.zipCode')?.invalid && profileForm.get('shippingAddress.zipCode')?.touched" class="text-danger">
+              Zip Code is required
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+      <button type="button" [routerLink]="['/profile']" class="btn btn-secondary me-2">Cancel</button>
+      <button type="submit" [disabled]="profileForm.invalid || isSaving" class="btn btn-primary">
+        <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Save Changes
+      </button>
+    </div>
+  </form>
+</div>

@@ -25,7 +25,9 @@ export class OrderInfoComponent implements OnInit {
   order!: Order;
   isLoading = false;
   errorMessage: string | null = null;
+  errorMessagePayment: string | null = null;
   timeToDelete: string = '24 hours';
+  canRefund: boolean = false;
 
   constructor(private storeService: StoreService,
               private route: ActivatedRoute) {
@@ -54,8 +56,13 @@ export class OrderInfoComponent implements OnInit {
           if (this.order.status === 'CREATED') {
             this.calculateTimeToDelete();
           }
+          if (this.order.status === 'DELIVERED') {
+            this.calculateIfCanRefund();
+          }
         },
         error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = err.error.message;
           console.error('Error fetching order:', err);
         }
       });
@@ -83,6 +90,7 @@ export class OrderInfoComponent implements OnInit {
 
   payForOrder() {
     if (this.order.status === 'CREATED') {
+      this.errorMessagePayment = null;
       this.isLoading = true;
       this.storeService.goToRepayment(this.order.id).subscribe({
         next: (response) => {
@@ -94,9 +102,22 @@ export class OrderInfoComponent implements OnInit {
         error: (err) => {
           console.error('Error updating customer:', err);
           this.isLoading = false;
-          this.errorMessage = 'An error occurred while processing payment. Try again later.';
+          this.errorMessagePayment = 'An error occurred while processing payment. Try again later.';
         }
       });
     }
+  }
+
+  cancelOrder() {
+    //todo: handle cancel order
+  }
+
+  private calculateIfCanRefund() {
+    const deliveryDate = new Date(this.order.deliveryDate);
+    const currentDate = new Date();
+    const timeDifference = currentDate.getTime() - deliveryDate.getTime();
+    const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 14));
+    console.log(daysDifference);
+    this.canRefund = daysDifference <= 14;
   }
 }

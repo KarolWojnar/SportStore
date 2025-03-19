@@ -29,3 +29,13 @@ export interface ShippingAddress {
   zipCode: string;
   country: string;
 }
+
+export interface UserDetails {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  shippingAddress: ShippingAddress;
+  role: string;
+  enabled: boolean;
+}

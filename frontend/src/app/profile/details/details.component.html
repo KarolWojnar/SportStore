@@ -1,0 +1,38 @@
+<div class="container">
+  <h2 class="mb-4">User Profile</h2>
+
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="user && !isLoading" class="user-details">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="p-4 border rounded shadow-sm">
+          <h4 class="mb-3">Personal Information</h4>
+          <p><strong>First Name:</strong> {{ user.firstName }}</p>
+          <p><strong>Last Name:</strong> {{ user.lastName }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <p><strong>Role:</strong> {{ user.role }}</p>
+          <p><strong>Account Status:</strong> {{ user.enabled ? 'Active' : 'Inactive' }}</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="p-4 border rounded shadow-sm">
+          <h4 class="mb-3">Shipping Address</h4>
+          <p><strong>Address:</strong> {{ user.shippingAddress.address }}</p>
+          <p><strong>City:</strong> {{ user.shippingAddress.city }}</p>
+          <p><strong>Country:</strong> {{ user.shippingAddress.country }}</p>
+          <p><strong>Zip Code:</strong> {{ user.shippingAddress.zipCode }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

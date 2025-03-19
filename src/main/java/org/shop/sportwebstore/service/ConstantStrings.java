@@ -10,6 +10,7 @@ public final class ConstantStrings {
 
     public static final Duration ORDER_EXPIRATION = Duration.ofMinutes(30);
     public static final Duration ORDER_CHANGE = Duration.ofDays(2);
+    public static final Duration ORDER_DELETE = Duration.ofDays(1);
 
     public static final String ACTIVATION_EMAIL_BODY = """
         <html>

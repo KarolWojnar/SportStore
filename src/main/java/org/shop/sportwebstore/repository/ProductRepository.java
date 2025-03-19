@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,4 +26,11 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     List<Product> findTop4ByCategoriesInAndIdNot(Collection<List<Category>> categories, String id);
     Optional<Product> findByIdAndAmountLeftIsGreaterThan(String id, int amountLeft);
 
+    @Query("{ 'id': { '$eq': ?0 } }")
+    @Update("{ $inc: { amountLeft: ?1 } }")
+    void incrementAmountLeftById(String id, int amountLeft);
+
+    @Query("{ 'id': { '$eq': ?0 } }")
+    @Update("{ $inc: { orders: ?1 } }")
+    void incrementSoldById(String productId, int amountItems);
 }

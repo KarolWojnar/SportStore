@@ -17,6 +17,8 @@ import { PaymentComponent } from './payment/payment.component';
 import { OrderComponent } from './payment/order/order.component';
 import { OrderInfoComponent } from './profile/order-info/order-info.component';
 import { OrdersComponent } from './profile/orders/orders.component';
+import { DetailsComponent as  ProfileDetailsComponent } from './profile/details/details.component';
+import { EditComponent } from './profile/edit/edit.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -26,10 +28,18 @@ export const routes: Routes = [
   { path: 'reset-password', component: RecoveryPasswordComponent, canActivate: [NoAuthGuard] },
   { path: 'reset-password/:resetCode', component: NewPasswordComponent, canActivate: [NoAuthGuard] },
   { path: 'products', component: ProductComponent, canActivate: [AuthGuard] },
-  { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
   { path: 'products/:id', component: DetailsComponent },
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-  { path: 'orders/:id', component: OrderInfoComponent, canActivate: [AuthGuard] },
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    canActivate: [AuthGuard],
+    children: [
+      { path: '', component: ProfileDetailsComponent },
+      { path: 'edit', component: EditComponent },
+      { path: 'orders', component: OrdersComponent },
+      { path: 'orders/:id', component: OrderInfoComponent }
+    ]
+  },
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
   { path: 'checkout', component: PaymentComponent, canActivate: [AuthGuard] },
   { path: 'order', component: OrderComponent, canActivate: [AuthGuard] },

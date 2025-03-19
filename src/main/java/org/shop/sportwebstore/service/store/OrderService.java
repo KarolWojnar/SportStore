@@ -56,8 +56,13 @@ public class OrderService {
     public void updateOrderStatusBySessionId(String sessionId, OrderStatus status) {
         Order order = orderRepository.findBySessionId(sessionId).orElseThrow(() -> new PaymentException("Order not found."));
         order.setNewStatus(status);
+        incrementSoldItems(order.getProducts());
         emailService.sendEmailWithOrderDetails(order);
         orderRepository.save(order);
+    }
+
+    private void incrementSoldItems(Map<String, Integer> products) {
+        products.keySet().forEach(productId -> productRepository.incrementSoldById(productId, products.get(productId)));
     }
 
     public List<OrderBaseDto> getUserOrders() {
@@ -92,5 +97,13 @@ public class OrderService {
                 .orderDate(order.getOrderDate())
                 .productsDto(OrderProductDto.mapToDto(productsMap))
                 .build();
+    }
+
+    @Transactional
+    public void handleNotPaidOrders(List<Order> orders) {
+        for (Order order : orders) {
+            order.getProducts().keySet().forEach(productId -> productRepository.incrementAmountLeftById(productId, order.getProducts().get(productId)));
+            orderRepository.delete(order);
+        }
     }
 }

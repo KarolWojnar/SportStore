@@ -32,5 +32,10 @@
 }
 
 .img-logo {
+  transition: transform 0.5s;
   height: 50px;
+  &:hover {
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+  }
 }

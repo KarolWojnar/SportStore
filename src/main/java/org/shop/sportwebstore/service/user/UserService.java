@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ActivationType;
-import org.shop.sportwebstore.model.dto.AuthUser;
-import org.shop.sportwebstore.model.dto.OrderDto;
-import org.shop.sportwebstore.model.dto.ResetPassword;
-import org.shop.sportwebstore.model.dto.UserDto;
+import org.shop.sportwebstore.model.dto.*;
 import org.shop.sportwebstore.model.entity.Activation;
 import org.shop.sportwebstore.model.entity.Cart;
 import org.shop.sportwebstore.model.entity.Customer;
@@ -73,7 +70,7 @@ public class UserService {
 
     public ResponseEntity<?> finAllUsers() {
         List<User> users = userRepository.findAll();
-        return ResponseEntity.ok(Map.of("user", users.stream().map(UserDto::toUserDto).toList()));
+        return ResponseEntity.ok(Map.of("user", users.stream().map(UserInfoDto::mapToDto).toList()));
     }
 
     public String getAuth(AuthUser authRequest) {
@@ -215,5 +212,12 @@ public class UserService {
         customer.setShippingAddress(orderDto.getShippingAddress());
         customerRepository.save(customer);
         return customer;
+    }
+
+    public UserDetailsDto getUserDetails() {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+        Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
+        return UserDetailsDto.toDto(user, customer);
     }
 }

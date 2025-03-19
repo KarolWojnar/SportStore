@@ -1,0 +1,13 @@
+.reset-button {
+  cursor: pointer;
+
+  fa-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+
+    &:hover {
+      transform: rotate(180deg) scale(2);
+    }
+  }
+}

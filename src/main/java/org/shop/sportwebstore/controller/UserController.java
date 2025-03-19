@@ -24,12 +24,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getUser(){
-        return userService.finAllUsers();
-    }
-
     @PostMapping
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDto user, BindingResult br){
         if (br.hasErrors()) {
@@ -43,8 +37,15 @@ public class UserController {
         }
     }
 
-
-
+    @GetMapping()
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getUser() {
+        try {
+            return ResponseEntity.ok(Map.of("user", userService.getUserDetails()));
+        } catch (UserException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
 
 
     @GetMapping("/theme")
