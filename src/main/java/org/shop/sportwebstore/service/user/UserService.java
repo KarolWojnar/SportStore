@@ -220,4 +220,19 @@ public class UserService {
         Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
         return UserDetailsDto.toDto(user, customer);
     }
+
+    public UserDetailsDto updateUser(CustomerDto user) {
+        User currentUser = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+        Customer customer = customerRepository.findByUserId(currentUser.getId()).orElse(null);
+        if (customer == null) {
+            customer = new Customer();
+            customer.setUserId(currentUser.getId());
+        }
+        customer.setFirstName(user.getFirstName());
+        customer.setLastName(user.getLastName());
+        customer.setShippingAddress(user.getShippingAddress());
+        customerRepository.save(customer);
+        return UserDetailsDto.toDto(currentUser, customer);
+    }
 }

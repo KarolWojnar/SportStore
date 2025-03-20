@@ -6,11 +6,14 @@ import lombok.EqualsAndHashCode;
 import org.shop.sportwebstore.model.ShippingAddress;
 import org.shop.sportwebstore.model.entity.Customer;
 import org.shop.sportwebstore.model.entity.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDetailsDto extends UserInfoDto {
+    private static final Logger log = LoggerFactory.getLogger(UserDetailsDto.class);
     private String firstName;
     private String lastName;
     private ShippingAddress shippingAddress;

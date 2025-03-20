@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.exception.ShopException;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ErrorResponse;
+import org.shop.sportwebstore.model.dto.CustomerDto;
 import org.shop.sportwebstore.model.dto.UserDto;
 import org.shop.sportwebstore.service.user.UserService;
 import org.shop.sportwebstore.service.ValidationUtil;
@@ -34,6 +35,16 @@ public class UserController {
         } catch (ShopException e) {
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse("Validation failed", Map.of("email", e.getMessage())));
+        }
+    }
+
+    @PutMapping()
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateCustomer(@RequestBody CustomerDto user) {
+        try {
+            return ResponseEntity.ok(Map.of("user", userService.updateUser(user)));
+        } catch (UserException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
 

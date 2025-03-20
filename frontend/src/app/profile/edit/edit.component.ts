@@ -5,7 +5,7 @@ import { AuthService } from '../../service/auth.service';
 import { NgIf } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowRotateRight } from '@fortawesome/free-solid-svg-icons';
-import { UserDetails } from '../../model/user-dto';
+import { CustomerDetails, UserDetails } from '../../model/user-dto';
 
 @Component({
   selector: 'app-edit',
@@ -26,6 +26,8 @@ export class EditComponent implements OnInit {
   errorMessage: string | null = null;
   successMessage: string | null = null;
   user!: UserDetails;
+  customerDto!: CustomerDetails;
+  protected readonly faArrowRotateRight = faArrowRotateRight;
 
   constructor(
     private fb: FormBuilder,
@@ -40,16 +42,26 @@ export class EditComponent implements OnInit {
 
   createForm(): FormGroup {
     return this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
+      firstName: ['', Validators.maxLength(50)],
+      lastName: ['', Validators.maxLength(50)],
       email: [{ value: '', disabled: true }],
       shippingAddress: this.fb.group({
-        address: ['', Validators.required],
-        city: ['', Validators.required],
-        country: ['', Validators.required],
-        zipCode: ['', Validators.required]
+        address: ['', Validators.maxLength(50)],
+        city: ['', Validators.maxLength(50)],
+        country: ['', Validators.maxLength(50)],
+        zipCode: ['', Validators.maxLength(50)]
       })
     });
+  }
+
+  isSomethingChanged(): boolean {
+    return this.profileForm.value.firstName !== this.user.firstName ||
+      this.profileForm.value.lastName !== this.user.lastName ||
+      this.profileForm.value.shippingAddress.address !== this.user.shippingAddress?.address ||
+      this.profileForm.value.shippingAddress.city !== this.user.shippingAddress?.city ||
+      this.profileForm.value.shippingAddress.country !== this.user.shippingAddress?.country ||
+      this.profileForm.value.shippingAddress.zipCode !== this.user.shippingAddress?.zipCode;
+
   }
 
   loadUserProfile(): void {
@@ -61,13 +73,15 @@ export class EditComponent implements OnInit {
           firstName: this.user.firstName,
           lastName: this.user.lastName,
           email: this.user.email,
-          shippingAddress: {
+        });
+        if (this.user.shippingAddress) {
+          this.profileForm.get('shippingAddress')?.patchValue({
             address: this.user.shippingAddress.address,
             city: this.user.shippingAddress.city,
             country: this.user.shippingAddress.country,
             zipCode: this.user.shippingAddress.zipCode
-          }
-        });
+          });
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -78,26 +92,42 @@ export class EditComponent implements OnInit {
   }
 
   onSubmit(): void {
-    //todo: submit new data
+    if (this.profileForm.valid && this.isSomethingChanged()) {
+      this.isSaving = true;
+      this.customerDto = this.profileForm.value;
+      this.authService.updateCustomerInfo(this.customerDto).subscribe({
+        next: (response) => {
+          this.successMessage = 'New data saved!';
+          this.user = response.user;
+          this.isSaving = false;
+        },
+        error: (error) => {
+          this.errorMessage = error.error.message;
+          this.isSaving = false;
+        }
+      });
+      setTimeout(() => {
+        this.successMessage = null;
+        this.errorMessage = null;
+      }, 3000);
+    }
   }
-
-  protected readonly faArrowRotateRight = faArrowRotateRight;
 
   resetDataUser() {
     this.profileForm.patchValue({
-      firstName: this.user.firstName,
-      lastName: this.user.lastName,
-      email: this.user.email
+      firstName: this.user.firstName? this.user.firstName : null,
+      lastName: this.user.lastName? this.user.lastName : null,
+      email: this.user.email? this.user.email : null
     });
   }
 
   resetDataCustomer() {
     this.profileForm.patchValue({
       shippingAddress: {
-        address: this.user.shippingAddress.address,
-        city: this.user.shippingAddress.city,
-        country: this.user.shippingAddress.country,
-        zipCode: this.user.shippingAddress.zipCode
+        address: this.user.shippingAddress?.address? this.user.shippingAddress.address : null,
+        city: this.user.shippingAddress?.city? this.user.shippingAddress.city : null,
+        country: this.user.shippingAddress?.country? this.user.shippingAddress.country : null,
+        zipCode: this.user.shippingAddress?.zipCode? this.user.shippingAddress.zipCode : null
       }
     });
   }

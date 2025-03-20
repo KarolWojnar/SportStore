@@ -1,16 +1,54 @@
 services:
-  mongodb:
+  backend:
+    build: '.'
+    container_name: backend
+    env_file:
+      - .env
+    ports:
+      - '8080:8080'
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      stripe-cli:
+        condition: service_started
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - '4200:4200'
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+    networks:
+      - app-network
+
+  mongo:
     image: 'mongo:latest'
     container_name: mongo
     environment:
-      - MONGO_INITDB_DATABASE=storeDB
-      - MONGO_INITDB_ROOT_PASSWORD=root
-      - MONGO_INITDB_ROOT_USERNAME=root
+      - 'MONGO_INITDB_DATABASE=storeDB'
+      - 'MONGO_INITDB_ROOT_PASSWORD=root'
+      - 'MONGO_INITDB_ROOT_USERNAME=root'
     ports:
       - '27017:27017'
     volumes:
       - mongo-data:/data/db
       - ./init.js:/docker-entrypoint-initdb.d/init.js:ro
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ping:1})"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: 'redis:latest'
@@ -19,16 +57,23 @@ services:
       - '6379:6379'
     volumes:
       - redis-data:/data
+    networks:
+      - app-network
 
-#  stripe:
-#    image: 'stripe/stripe-cli:latest'
-#    container_name: stripe
-#    environment:
-#      - STRIPE_API_KEY=whsec_37075ac283e1e6a9904f7037f25cf6277d2943a7933c60d8e25f6a4140e01331
-#    command: listen --forward-to host.docker.internal:8080/api/payment/webhook
-#    extra_hosts:
-#      - "host.docker.internal:host-gateway"
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe-cli
+    command: listen --forward-to http://backend:8080/api/payment/webhook
+    volumes:
+      - stripe-cli-config:/root/.config/stripe
+    networks:
+      - app-network
 
 volumes:
   mongo-data:
   redis-data:
+  stripe-cli-config:
+
+networks:
+  app-network:
+    driver: bridge

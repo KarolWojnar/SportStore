@@ -4,7 +4,7 @@
     <p>Thank you for your purchase. Your payment has been successfully processed.</p>
     <p>You will receive an email confirmation shortly with the details of your order.</p>
     <hr>
-    <p class="mb-0" *ngIf="orderId">You can track your order <a [routerLink]="['/orders', orderId]">here</a>.</p>
+    <p class="mb-0" *ngIf="orderId">You can track your order <a [routerLink]="['/profile/orders', orderId]">here</a>.</p>
     <p class="mb-0" *ngIf="!orderId">You can track order in your <a routerLink="/profile">profile</a>.</p>
   </div>
 

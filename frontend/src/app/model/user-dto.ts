@@ -11,12 +11,9 @@ export interface UserLoginDto {
   password: string;
 }
 
-export interface CustomerDto {
+export interface CustomerDto extends CustomerDetails{
   id?: string;
-  firstName?: string;
-  lastName?: string;
   email?: string;
-  shippingAddress?: ShippingAddress;
   totalPrice?: number;
   deliveryTime?: string;
   paymentMethod?: string;
@@ -30,12 +27,15 @@ export interface ShippingAddress {
   country: string;
 }
 
-export interface UserDetails {
+export interface UserDetails extends CustomerDetails {
   id: string;
-  firstName: string;
-  lastName: string;
   email: string;
-  shippingAddress: ShippingAddress;
   role: string;
   enabled: boolean;
+}
+
+export interface CustomerDetails {
+  firstName?: string;
+  lastName?: string;
+  shippingAddress?: ShippingAddress;
 }

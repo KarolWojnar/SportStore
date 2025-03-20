@@ -8,15 +8,16 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.shop.sportwebstore.model.Roles;
-import org.shop.sportwebstore.model.ShippingAddress;
 import org.shop.sportwebstore.model.entity.Customer;
 import org.shop.sportwebstore.model.entity.User;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserDto {
+public class UserDto extends CustomerDto {
     @Email(message = "Email is not valid.")
     @NotEmpty(message = "Email is required.")
     private String email;
@@ -24,9 +25,6 @@ public class UserDto {
     private String password;
     @Size(min = 8, message = "Confirm password must be have at least 8 characters.")
     private String confirmPassword;
-    private String firstName;
-    private String lastName;
-    private ShippingAddress shippingAddress;
     private Roles role;
 
     @AssertTrue(message = "Passwords must match.")
@@ -59,12 +57,13 @@ public class UserDto {
     }
 
     public static UserDto toCustomerDto(Customer customer, User user) {
-        return UserDto.builder()
+        UserDto userDto = UserDto.builder()
                 .email(user.getEmail())
-                .firstName(customer.getFirstName())
-                .lastName(customer.getLastName())
-                .shippingAddress(customer.getShippingAddress())
                 .role(user.getRole())
                 .build();
+        userDto.setFirstName(customer.getFirstName());
+        userDto.setLastName(customer.getLastName());
+        userDto.setShippingAddress(customer.getShippingAddress());
+        return userDto;
     }
 }

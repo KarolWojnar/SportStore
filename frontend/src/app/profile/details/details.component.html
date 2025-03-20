@@ -16,21 +16,21 @@
       <div class="col-md-6 mb-4">
         <div class="p-4 border rounded shadow-sm">
           <h4 class="mb-3">Personal Information</h4>
-          <p><strong>First Name:</strong> {{ user.firstName }}</p>
-          <p><strong>Last Name:</strong> {{ user.lastName }}</p>
+          <p *ngIf="user.firstName"><strong>First Name:</strong> {{ user.firstName }}</p>
+          <p *ngIf="user.firstName"><strong>Last Name:</strong> {{ user.lastName }}</p>
           <p><strong>Email:</strong> {{ user.email }}</p>
           <p><strong>Role:</strong> {{ user.role }}</p>
           <p><strong>Account Status:</strong> {{ user.enabled ? 'Active' : 'Inactive' }}</p>
         </div>
       </div>
 
-      <div class="col-md-6 mb-4">
+      <div class="col-md-6 mb-4" *ngIf="user.shippingAddress">
         <div class="p-4 border rounded shadow-sm">
           <h4 class="mb-3">Shipping Address</h4>
-          <p><strong>Address:</strong> {{ user.shippingAddress.address }}</p>
-          <p><strong>City:</strong> {{ user.shippingAddress.city }}</p>
-          <p><strong>Country:</strong> {{ user.shippingAddress.country }}</p>
-          <p><strong>Zip Code:</strong> {{ user.shippingAddress.zipCode }}</p>
+          <p><strong>Address:</strong> {{ user.shippingAddress.address? user.shippingAddress.address : 'N/A' }}</p>
+          <p><strong>City:</strong> {{ user.shippingAddress.city? user.shippingAddress.city : 'N/A' }}</p>
+          <p><strong>Country:</strong> {{ user.shippingAddress.country? user.shippingAddress.country : 'N/A' }}</p>
+          <p><strong>Zip Code:</strong> {{ user.shippingAddress.zipCode? user.shippingAddress.zipCode : 'N/A' }}</p>
         </div>
       </div>
     </div>
