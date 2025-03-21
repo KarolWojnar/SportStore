@@ -1,13 +1,25 @@
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+.rating {
+  display: flex;
+  align-items: center;
+}
+
+.rating fa-icon {
+  font-size: 1.2rem;
+  transition: color 0.2s;
+}
+
+.rating fa-icon.text-warning {
+  color: #ffc107;
+}
+
+.rating fa-icon.text-secondary {
+  color: #ccc;
 }
 
 .order-details {
   .border {
     border: 1px solid #ddd !important;
     border-radius: 8px;
-    //background-color: #fff;
     transition: box-shadow 0.3s ease;
 
     &:hover {

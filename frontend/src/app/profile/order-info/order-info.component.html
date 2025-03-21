@@ -1,5 +1,9 @@
-<div class="container mt-4">
-  <h4 class="mb-4"><a routerLink="/profile/orders" class="text-reset">Orders</a> -> Details</h4>
+<div class="container">
+  <h4 class="mb-4">
+    <a routerLink="/profile" class="text-reset">User</a>
+    ->
+    <a routerLink="/profile/orders" class="text-reset">Orders</a>
+    -> Details</h4>
 
   <div *ngIf="!order && !errorMessage" class="d-flex justify-content-center align-items-center" style="height: 200px;">
     <div class="spinner-border text-primary" role="status">
@@ -65,13 +69,35 @@
       <div class="col-12">
         <div class="p-3 border rounded">
           <h4 class="mb-3">Products</h4>
-          <div *ngFor="let product of order.productsDto" class="product-item mb-3 border-bottom rounded pb-2">
-            <div class="d-flex align-items-center">
+          <div *ngFor="let product of order.productsDto"
+               class="product-item mb-3 border-bottom rounded pb-2 d-flex justify-content-between align-items-end">
+            <a [routerLink]="['/products', product.productId]" class="d-flex align-items-center text-reset text-decoration-none">
               <img [src]="'http://localhost:8080/' + product.image" alt="{{ product.name }}" class="rounded" style="width: 100px; height: auto">
               <div class="ms-3">
                 <h5>{{ product.name }}</h5>
                 <p><strong>Price:</strong> {{ product.price | currency: 'EUR' }}</p>
                 <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+              </div>
+            </a>
+            <div *ngIf="!product.rated && order.status === 'DELIVERED'">
+              <div class="d-flex flex-column align-items-end">
+                <button (click)="submitRating(product)" class="btn btn-outline-secondary btn-sm mt-2"
+                        [disabled]="rating == 0 && productRate === product.productId"
+                        [ngClass]="{'btn-outline-secondary': (productRate !== product.productId),
+                        'btn-outline-success': productRate === product.productId }">
+                  Submit Rating
+                </button>
+                <div *ngIf="productRate === product.productId"
+                     class="rating mb-2">
+                  <ng-container *ngFor="let star of [1,2,3,4,5]">
+                    <fa-icon
+                      [icon]="faStar"
+                      [ngClass]="{'text-warning': rating >= star, 'text-secondary': rating < star}"
+                      (click)="rateProduct(star)"
+                      style="cursor: pointer; margin: 0 2px;"
+                    ></fa-icon>
+                  </ng-container>
+                </div>
               </div>
             </div>
           </div>

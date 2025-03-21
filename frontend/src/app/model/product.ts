@@ -13,12 +13,13 @@ export interface Product {
 }
 
 export interface ProductCart {
-  id: string;
+  productId: string;
   name: string;
   image: string;
   price: number;
   quantity: number;
   totalQuantity: number;
+  rated: boolean;
 }
 
 

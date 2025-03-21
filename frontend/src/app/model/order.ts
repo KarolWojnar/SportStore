@@ -21,3 +21,9 @@ export interface Order extends OrderBaseInfo {
   firstName: string;
   lastName: string;
 }
+
+export interface OrderRatingProduct {
+  productId: string;
+  rating: number;
+  orderId: string;
+}

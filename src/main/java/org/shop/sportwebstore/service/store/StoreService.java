@@ -3,8 +3,10 @@ package org.shop.sportwebstore.service.store;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.ProductException;
+import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.dto.ProductCart;
 import org.shop.sportwebstore.model.dto.ProductDto;
+import org.shop.sportwebstore.model.dto.RateProductDto;
 import org.shop.sportwebstore.model.entity.Cart;
 import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +36,7 @@ public class StoreService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final PaymentService paymentService;
+    private final OrderService orderService;
 
     public void addToCart(String productId) {
         Product product = productRepository.findByIdAndAmountLeftIsGreaterThan(productId, 0).orElseThrow(() -> new ProductException("Product not found."));
@@ -142,4 +146,28 @@ public class StoreService {
         }
         return paymentService.calculateTotalPrice(cart);
     }
+
+    @Transactional(rollbackFor = UserException.class)
+    public void rateProduct(RateProductDto rateProductDto) {
+        Product product = productRepository.findById(rateProductDto.getProductId()).orElseThrow(() -> new ProductException("Product not found."));
+        if (rateProductDto.getRating() < 1 || rateProductDto.getRating() > 5) {
+            throw new ProductException("Rating must be between 1 and 5.");
+        }
+        int key = 0;
+        double value = 0;
+        for (Map.Entry<Integer, Double> entry : product.getRatings().entrySet()) {
+            key = entry.getKey();
+            value = entry.getValue();
+        }
+
+        double finalRating = ((value * key) + (double) rateProductDto.getRating()) / (key + 1);
+        finalRating = Math.round(finalRating * 100.0) / 100.0;
+
+        product.getRatings().put(key + 1, finalRating);
+        product.getRatings().remove(key);
+
+        productRepository.save(product);
+        orderService.setOrderProductAsRated(rateProductDto.getOrderId(), rateProductDto.getProductId());
+    }
+
 }

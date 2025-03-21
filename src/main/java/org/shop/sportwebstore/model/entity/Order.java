@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.shop.sportwebstore.model.OrderStatus;
+import org.shop.sportwebstore.model.ProductInOrder;
 import org.shop.sportwebstore.model.ShippingAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 
 @Document(collection = "orders")
 @NoArgsConstructor
@@ -20,7 +19,6 @@ import java.util.Map;
 @Data
 public class Order {
 
-    private static final Logger log = LoggerFactory.getLogger(Order.class);
     @Id
     private String id;
     @NotNull(message = "User id is required.")
@@ -31,7 +29,7 @@ public class Order {
      * value - amount of product
      */
     @NotNull(message = "Products are required.")
-    private Map<String, Integer> products;
+    private List<ProductInOrder> products;
     private OrderStatus status = OrderStatus.CREATED;
     private ShippingAddress orderAddress;
     private Date orderDate = Date.from(java.time.Instant.now());
@@ -41,7 +39,7 @@ public class Order {
     private double totalPrice;
     private String sessionId;
 
-    public Order(Map<String, Integer> products, String userId, ShippingAddress address, double price, String paymentMethod) {
+    public Order(List<ProductInOrder> products, String userId, ShippingAddress address, double price, String paymentMethod) {
         this.products = products;
         this.userId = userId;
         this.orderAddress = address;

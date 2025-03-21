@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.PaymentException;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.OrderStatus;
+import org.shop.sportwebstore.model.ProductInOrder;
 import org.shop.sportwebstore.model.dto.OrderBaseDto;
 import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.model.dto.OrderProductDto;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -35,8 +36,16 @@ public class OrderService {
     private final ProductRepository productRepository;
 
     public String createOrder(Cart cart, Customer customer, double totalPrice, SessionCreateParams.PaymentMethodType paymentMethod) {
+        List<ProductInOrder> productInOrder = cart.getProducts().entrySet().stream()
+                .map(entry -> new ProductInOrder(
+                        entry.getKey(),
+                        entry.getValue(),
+                        productRepository.findById(entry.getKey()).isPresent() ?
+                                productRepository.findById(entry.getKey()).get().getPrice() : 0.0
+                ))
+                .collect(Collectors.toList());
         Order order = orderRepository.save(new Order(
-                cart.getProducts(),
+                productInOrder,
                 customer.getUserId(),
                 customer.getShippingAddress(),
                 Math.round(totalPrice) / 100.0,
@@ -61,8 +70,8 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    private void incrementSoldItems(Map<String, Integer> products) {
-        products.keySet().forEach(productId -> productRepository.incrementSoldById(productId, products.get(productId)));
+    private void incrementSoldItems(List<ProductInOrder> products) {
+        products.forEach(product -> productRepository.incrementSoldById(product.getProductId(), product.getAmount()));
     }
 
     public List<OrderBaseDto> getUserOrders() {
@@ -76,14 +85,9 @@ public class OrderService {
                 .orElseThrow(() -> new UserException("User not found."));
         Order order = orderRepository.findByIdAndUserId(id, user.getId()).orElseThrow(() -> new PaymentException("Order not found."));
         Customer customer = customerRepository.findByUserId(user.getId()).orElseThrow(() -> new UserException("Customer not found."));
-        List<String> productIds = order.getProducts().keySet().stream().toList();
+        List<String> productIds = order.getProducts().stream().map(ProductInOrder::getProductId).toList();
         List<Product> products = productRepository.findAllById(productIds);
-        Map<Product, Integer> productsMap = products.stream().collect(
-                java.util.stream.Collectors.toMap(
-                        product -> product,
-                        product -> order.getProducts().get(product.getId())
-                )
-        );
+        List<ProductInOrder> productsInOrder = order.getProducts();
         return OrderDto.builder()
                 .id(order.getId())
                 .firstName(customer.getFirstName())
@@ -95,15 +99,28 @@ public class OrderService {
                 .totalPrice(order.getTotalPrice())
                 .deliveryDate(order.getDeliveryDate())
                 .orderDate(order.getOrderDate())
-                .productsDto(OrderProductDto.mapToDto(productsMap))
+                .productsDto(OrderProductDto.mapToDto(productsInOrder, products))
                 .build();
     }
 
     @Transactional
     public void handleNotPaidOrders(List<Order> orders) {
         for (Order order : orders) {
-            order.getProducts().keySet().forEach(productId -> productRepository.incrementAmountLeftById(productId, order.getProducts().get(productId)));
+            order.getProducts().forEach(product -> productRepository.incrementAmountLeftById(product.getProductId(), product.getAmount()));
             orderRepository.delete(order);
         }
+    }
+
+    public void setOrderProductAsRated(String orderId, String productId) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+        Order order = orderRepository.findByIdAndUserId(orderId, user.getId())
+                .orElseThrow(() -> new PaymentException("Order not found."));
+        order.getProducts().forEach(product -> {
+            if (product.getProductId().equals(productId)) {
+                product.setRated(true);
+            }
+        });
+        orderRepository.save(order);
     }
 }

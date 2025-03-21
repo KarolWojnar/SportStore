@@ -2,6 +2,7 @@ package org.shop.sportwebstore.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.ErrorResponse;
+import org.shop.sportwebstore.model.dto.RateProductDto;
 import org.shop.sportwebstore.service.store.StoreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -125,6 +126,17 @@ public class StoreController {
     public ResponseEntity<?> calculateTotalPrice() {
         try {
             return ResponseEntity.ok(Map.of("totalPrice", storeService.calculateTotalPriceOfCart()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/rate")
+    public ResponseEntity<?> rateProduct(@RequestBody RateProductDto rateProductDto) {
+        try {
+            storeService.rateProduct(rateProductDto);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

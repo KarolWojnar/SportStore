@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AuthStateService } from './auth-state.service';
 import { CustomerDto } from '../model/user-dto';
 import { Product, ProductCart } from '../model/product';
-import { Order, OrderBaseInfo } from '../model/order';
+import { Order, OrderBaseInfo, OrderRatingProduct } from '../model/order';
 
 @Injectable({
   providedIn: 'root'
@@ -133,5 +133,9 @@ export class StoreService {
 
   getOrderById(orderId: string) {
     return this.httpClient.get<{order: Order}>(`${this.apiUrlOrder}/${orderId}`);
+  }
+
+  rateProduct(rating: OrderRatingProduct) {
+    return this.httpClient.patch(`${this.apiUrl}/rate`, rating);
   }
 }

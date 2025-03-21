@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { StoreService } from '../../service/store.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Order } from '../../model/order';
+import { Order, OrderRatingProduct } from '../../model/order';
 import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatIcon } from '@angular/material/icon';
+import { ProductCart } from '../../model/product';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-order-info',
@@ -14,7 +18,9 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     DatePipe,
     NgIf,
     RouterLink,
-    MatProgressSpinner
+    MatProgressSpinner,
+    MatIcon,
+    FaIconComponent
   ],
   standalone: true,
   templateUrl: './order-info.component.html',
@@ -28,6 +34,10 @@ export class OrderInfoComponent implements OnInit {
   errorMessagePayment: string | null = null;
   timeToDelete: string = '24 hours';
   canRefund: boolean = false;
+  rating = 0;
+  protected readonly faStar = faStar;
+  productRate = 'XX';
+  successRatingMessage: string | null = null;
 
   constructor(private storeService: StoreService,
               private route: ActivatedRoute) {
@@ -120,4 +130,32 @@ export class OrderInfoComponent implements OnInit {
     console.log(daysDifference);
     this.canRefund = daysDifference <= 14;
   }
+
+  rateProduct(number: number) {
+    this.rating = number;
+  }
+
+  submitRating(product: ProductCart): void {
+    if(this.rating !== 0 && this.productRate === product.productId) {
+      const rating: OrderRatingProduct = {
+        productId: product.productId,
+        rating: this.rating,
+        orderId: this.order.id
+      };
+      this.storeService.rateProduct(rating).subscribe({
+        next: () => {
+          this.rating = 0;
+          this.productRate = 'XX';
+          window.location.reload();
+        },
+        error: (err) => {
+          console.error('Error updating customer:', err);
+        }
+      });
+    } else {
+      this.productRate = product.productId;
+      this.rating = 0;
+    }
+  }
+
 }
