@@ -17,8 +17,11 @@ import { PaymentComponent } from './payment/payment.component';
 import { OrderComponent } from './payment/order/order.component';
 import { OrderInfoComponent } from './profile/order-info/order-info.component';
 import { OrdersComponent } from './profile/orders/orders.component';
+import { OrdersComponent as AdminOrdersComponent } from './admin/orders/orders.component';
 import { DetailsComponent as  ProfileDetailsComponent } from './profile/details/details.component';
 import { EditComponent } from './profile/edit/edit.component';
+import { UsersComponent } from './admin/users/users.component';
+import { ProductsComponent } from './admin/products/products.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -43,5 +46,13 @@ export const routes: Routes = [
   { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
   { path: 'checkout', component: PaymentComponent, canActivate: [AuthGuard] },
   { path: 'order', component: OrderComponent, canActivate: [AuthGuard] },
-  { path: 'admin', component: AdminComponent, canActivate: [RoleGuard] }
+  {
+    path: 'admin',
+    component: AdminComponent, canActivate: [RoleGuard] ,
+    children: [
+      { path: 'users', component: UsersComponent },
+      { path: 'products', component: ProductsComponent },
+      { path: 'orders', component: AdminOrdersComponent }
+    ]
+  }
 ];

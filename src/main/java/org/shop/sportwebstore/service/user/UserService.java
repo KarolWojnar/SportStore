@@ -17,8 +17,9 @@ import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.shop.sportwebstore.service.store.CartService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,8 +27,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,11 +68,6 @@ public class UserService {
             return UserDto.toCustomerDto(customerRepository.save(UserDto.toCustomerEntity(user, newUser)), newUser);
         }
         return UserDto.toUserDto(newUser);
-    }
-
-    public ResponseEntity<?> finAllUsers() {
-        List<User> users = userRepository.findAll();
-        return ResponseEntity.ok(Map.of("user", users.stream().map(UserInfoDto::mapToDto).toList()));
     }
 
     public String getAuth(AuthUser authRequest) {
@@ -234,5 +231,20 @@ public class UserService {
         customer.setShippingAddress(user.getShippingAddress());
         customerRepository.save(customer);
         return UserDetailsDto.toDto(currentUser, customer);
+    }
+
+    public List<UserDetailsDto> getAllUsers(int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<User> users = userRepository.findAll(pageable);
+        if (users.isEmpty()) {
+            throw new UserException("No users found.");
+        }
+        List<Customer> customers = customerRepository.findAllByUserIdIn(users.stream().map(User::getId).toList());
+        List<UserDetailsDto> userDetails = new ArrayList<>();
+        for (User user : users) {
+            Customer customer = customers.stream().filter(c -> c.getUserId().equals(user.getId())).findFirst().orElse(null);
+            userDetails.add(UserDetailsDto.toDto(user, customer));
+        }
+        return userDetails;
     }
 }

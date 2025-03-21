@@ -1,0 +1,22 @@
+.container {
+  margin: 0 auto;
+}
+
+.user-card {
+  transition: box-shadow 0.3s ease;
+  background-color: rgba(176, 176, 248, 0.12);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(200, 171, 171, 0.87);
+  }
+}
+
+.role-admin {
+  background-color: #dc3545;
+  color: white;
+}
+
+.role-customer {
+  background-color: #28a745;
+  color: white;
+}
