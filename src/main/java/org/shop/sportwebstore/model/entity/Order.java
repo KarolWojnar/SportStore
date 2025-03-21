@@ -38,6 +38,7 @@ public class Order {
     private String paymentMethod;
     private double totalPrice;
     private String sessionId;
+    private boolean emailSent = false;
 
     public Order(List<ProductInOrder> products, String userId, ShippingAddress address, double price, String paymentMethod) {
         this.products = products;

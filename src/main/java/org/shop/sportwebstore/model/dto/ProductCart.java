@@ -5,7 +5,7 @@ import org.shop.sportwebstore.model.entity.Product;
 
 @Data
 public class ProductCart {
-    private String id;
+    private String productId;
     private String name;
     private String image;
     private double price;
@@ -14,7 +14,7 @@ public class ProductCart {
 
     public static ProductCart toDto(Product product, int quantity) {
         ProductCart productCart = new ProductCart();
-        productCart.setId(product.getId());
+        productCart.setProductId(product.getId());
         productCart.setName(product.getName());
         productCart.setImage(product.getImageUrl());
         productCart.setPrice(product.getPrice());

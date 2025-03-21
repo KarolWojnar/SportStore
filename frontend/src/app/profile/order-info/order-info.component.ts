@@ -145,8 +145,8 @@ export class OrderInfoComponent implements OnInit {
       this.storeService.rateProduct(rating).subscribe({
         next: () => {
           this.rating = 0;
+          product.rated = true;
           this.productRate = 'XX';
-          window.location.reload();
         },
         error: (err) => {
           console.error('Error updating customer:', err);

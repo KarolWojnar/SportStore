@@ -4,6 +4,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.PaymentException;
+import org.shop.sportwebstore.exception.ProductException;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.OrderStatus;
 import org.shop.sportwebstore.model.ProductInOrder;
@@ -113,14 +114,27 @@ public class OrderService {
 
     public void setOrderProductAsRated(String orderId, String productId) {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new UserException("User not found."));
+                .orElseThrow(() -> new ProductException("User not found."));
         Order order = orderRepository.findByIdAndUserId(orderId, user.getId())
-                .orElseThrow(() -> new PaymentException("Order not found."));
+                .orElseThrow(() -> new ProductException("Order not found."));
         order.getProducts().forEach(product -> {
             if (product.getProductId().equals(productId)) {
+                if (product.isRated()) {
+                    throw new ProductException("Product already rated.");
+                }
                 product.setRated(true);
             }
         });
         orderRepository.save(order);
+    }
+
+    public void sendOrderDeliveredEmail(Order order) {
+        try {
+            User user = userRepository.findById(order.getUserId()).orElseThrow(() -> new UserException("User not found."));
+            Customer customer = customerRepository.findByUserId(user.getId()).orElseThrow(() -> new UserException("Customer not found."));
+            emailService.sendEmailToDelivered(order, user, customer);
+        } catch (Exception e) {
+            log.error("Error sending email: {}", e.getMessage());
+        }
     }
 }

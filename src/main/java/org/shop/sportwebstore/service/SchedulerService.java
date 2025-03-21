@@ -60,15 +60,17 @@ public class SchedulerService {
         log.info("Deleted {} carts. date: {}", carts.size(), Date.from(Instant.now()));
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void changeOrderStatus() {
         Date minusTwoDays = new Date(System.currentTimeMillis() - ConstantStrings.ORDER_CHANGE.toMillis());
         List<Order> orders = orderRepository
                 .findAllByStatusIsNotAndLastModifiedBefore(OrderStatus.CREATED, minusTwoDays);
         for (Order order : orders) {
             order.setNextStatus();
-            if (order.getStatus() == OrderStatus.DELIVERED) {
-                //todo: send email to rate products
+            if (order.getStatus() == OrderStatus.DELIVERED && !order.isEmailSent()) {
+                orderService.sendOrderDeliveredEmail(order);
+                order.setEmailSent(true);
+                orderRepository.save(order);
             }
         }
         log.info("Changed {} orders status. date: {}", orders.size(),

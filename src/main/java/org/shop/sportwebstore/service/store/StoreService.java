@@ -3,7 +3,6 @@ package org.shop.sportwebstore.service.store;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.ProductException;
-import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.dto.ProductCart;
 import org.shop.sportwebstore.model.dto.ProductDto;
 import org.shop.sportwebstore.model.dto.RateProductDto;
@@ -147,7 +146,7 @@ public class StoreService {
         return paymentService.calculateTotalPrice(cart);
     }
 
-    @Transactional(rollbackFor = UserException.class)
+    @Transactional(rollbackFor = ProductException.class)
     public void rateProduct(RateProductDto rateProductDto) {
         Product product = productRepository.findById(rateProductDto.getProductId()).orElseThrow(() -> new ProductException("Product not found."));
         if (rateProductDto.getRating() < 1 || rateProductDto.getRating() > 5) {
@@ -166,8 +165,8 @@ public class StoreService {
         product.getRatings().put(key + 1, finalRating);
         product.getRatings().remove(key);
 
-        productRepository.save(product);
         orderService.setOrderProductAsRated(rateProductDto.getOrderId(), rateProductDto.getProductId());
+        productRepository.save(product);
     }
 
 }
