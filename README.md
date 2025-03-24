@@ -59,8 +59,8 @@ This is a monolithic e-commerce application built with:
 ### Quick Start with Docker
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/shop-app.git
-   cd shop-app
+   git clone [https://github.com/your-repo/shop-app.git](https://github.com/KarolWojnar/SportStore.git)
+   cd sportstore
 2. Set up `.env`:
 ```yaml
   # Secret key used for generating and verifying JWT tokens
