@@ -88,6 +88,6 @@ docker-compose up -d --build
 ```
 
 ### API Documentation
-```http request
+`
 http://localhost:8080/swagger-ui/index.html
-```
+`
