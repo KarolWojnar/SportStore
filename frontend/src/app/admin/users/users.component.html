@@ -1,5 +1,34 @@
 <div class="container">
-  <h4 class="mb-4"><a routerLink="/admin" class="text-reset">Admin</a> -> Users</h4>
+  <div class="d-flex justify-content-between">
+    <h4 class="mb-4"><a routerLink="/admin" class="text-reset">Admin</a> → Users</h4>
+    <div class="d-flex justify-content-end align-items-center gap-2">
+      <button [ngClass]="['btn btn-sm rounded-2', role === 'ROLE_ADMIN' ? 'btn-danger' : 'btn-outline-secondary']"
+              (click)="toggleRole('ROLE_ADMIN')">
+        Admin
+      </button>
+      <button [ngClass]="['btn btn-sm rounded-2', role === 'ROLE_CUSTOMER' ? 'btn-info' : 'btn-outline-secondary']"
+              (click)="toggleRole('ROLE_CUSTOMER')">
+        Customer
+      </button>
+      <button [ngClass]="['btn btn-sm rounded-2', enabled === true ? 'btn-success' : 'btn-outline-secondary']"
+              (click)="toggleActivationStatus(true)">
+        Active
+      </button>
+      <button [ngClass]="['btn btn-sm rounded-2', enabled === false ? 'btn-warning' : 'btn-outline-secondary']"
+              (click)="toggleActivationStatus(false)">
+        Inactive
+      </button>
+      <div class="col-md-3">
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          placeholder="Search..."
+          [(ngModel)]="search"
+          (input)="onSearch()"
+        />
+      </div>
+    </div>
+  </div>
 
   <div *ngIf="isLoading && users.length === 0" class="d-flex justify-content-center align-items-center" style="height: 200px;">
     <div class="spinner-border text-primary" role="status">
@@ -47,10 +76,13 @@
             <span *ngIf="!user.shippingAddress">N/A</span>
           </p>
         </div>
-        <div class="d-flex justify-content-end align-items-center">
-          <button *ngIf="user.enabled" class="btn btn-warning btn-sm rounded-2 mx-2">Deactivate</button>
-          <button *ngIf="!user.enabled" class="btn btn-success btn-sm rounded-2 mx-2">Activate</button>
-          <button class="btn btn-primary btn-sm rounded-2">Edit</button>
+        <div class="d-flex justify-content-end align-items-center gap-2">
+          <button *ngIf="user.role === 'ROLE_CUSTOMER'" class="btn btn-primary btn-sm rounded-2"
+                  (click)="setAsAdmin(user.id)">Set Admin</button>
+          <button *ngIf="user.enabled" class="btn btn-warning btn-sm rounded-2"
+          (click)="setActivation(user.id, !user.enabled)">Deactivate</button>
+          <button *ngIf="!user.enabled" class="btn btn-success btn-sm rounded-2"
+          (click)="setActivation(user.id, !user.enabled)">Activate</button>
         </div>
       </div>
       <div #lastUserElement *ngIf="last"></div>

@@ -26,10 +26,8 @@ export class AuthService {
     return this.httpClient.post(`${this.apiUrl}/auth/login`, user).pipe(
       tap((response: any) => {
         if (response && response.token) {
-          this.authState.setLoggedIn(true);
           localStorage.setItem('token', response.token);
-          localStorage.setItem('isAdmin', response.role === 'ROLE_ADMIN' ? 'true' : 'false');
-          localStorage.setItem('isDarkMode', response.isDarkMode ? 'true' : 'false');
+          this.authState.setLoggedIn(true);
           localStorage.setItem('cartHasItems', response.cartHasItems ? 'true' : 'false');
           this.authState.setCartHasItems(response.cartHasItems);
         }
