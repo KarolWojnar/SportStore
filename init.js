@@ -9,53 +9,43 @@ db.createCollection('products');
 const categories = [
     {
         _id: ObjectId(),
-        name: "Running",
-        description: "Running equipment and apparel"
+        name: "Running"
     },
     {
         _id: ObjectId(),
-        name: "Fitness",
-        description: "Gym and fitness equipment"
+        name: "Fitness"
     },
     {
         _id: ObjectId(),
-        name: "Team Sports",
-        description: "Equipment for team sports like football, basketball, volleyball"
+        name: "Team Sports"
     },
     {
         _id: ObjectId(),
-        name: "Water Sports",
-        description: "Equipment for swimming, diving, and other water activities"
+        name: "Water Sports"
     },
     {
         _id: ObjectId(),
-        name: "Winter Sports",
-        description: "Equipment for skiing, snowboarding, and other winter activities"
+        name: "Winter Sports"
     },
     {
         _id: ObjectId(),
-        name: "Outdoor",
-        description: "Hiking, camping, and outdoor gear"
+        name: "Outdoor"
     },
     {
         _id: ObjectId(),
-        name: "Nutrition",
-        description: "Sports nutrition and supplements"
+        name: "Nutrition"
     },
     {
         _id: ObjectId(),
-        name: "Boxing",
-        description: "Equipment for boxing sports."
+        name: "Boxing"
     },
     {
         _id: ObjectId(),
-        name: "Survival",
-        description: "Equipment for survivals."
+        name: "Survival"
     },
     {
         _id: ObjectId(),
-        name: "Motorsports",
-        description: "Equipment for bikes and motorcycles."
+        name: "Motorsports"
     }
 ];
 
@@ -73,8 +63,7 @@ function getCategoryObjects(categoryNames) {
         if (category) {
             categoryObjects.push({
                 _id: category._id,
-                name: category.name,
-                description: category.description
+                name: category.name
             });
         }
     }
