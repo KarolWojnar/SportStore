@@ -52,16 +52,17 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (response) => {
         this.users = [...this.users, ...response.users];
         this.hasMoreUsers = response.users.length > 9;
-
+        this.isLoading = false;
+        this.isLoadingNextData = false;
         setTimeout(() => this.updateObserver(), 100);
       },
       error: (error) => {
-        console.error('Error loading users:', error);
-        this.errorMessage = 'Failed to load users. Please try again later.';
-      },
-      complete: () => {
         this.isLoading = false;
         this.isLoadingNextData = false;
+        if (this.page == 0) {
+          console.error('Error loading users:', error);
+          this.errorMessage = 'Failed to load users. Please try again later.';
+        }
       }
     });
   }
@@ -74,7 +75,7 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
     const options = {
       root: null,
       rootMargin: '100px',
-      threshold: 0.1
+      threshold: 0.5
     };
 
     this.observer = new IntersectionObserver((entries) => {

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.service.store.PaymentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class PaymentController {
     public ResponseEntity<?> createPayment(@RequestBody OrderDto orderDto) {
         try {
             String paymentUrl = paymentService.createPayment(orderDto);
-            return ResponseEntity.ok(Map.of("url", paymentUrl));
+            return new ResponseEntity<>(Map.of("url", paymentUrl), HttpStatus.CREATED);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
@@ -43,6 +44,7 @@ public class PaymentController {
     }
 
     @GetMapping("/summary")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getSummary() {
         try {
             return ResponseEntity.ok(Map.of("order", paymentService.getSummary()));
@@ -51,6 +53,7 @@ public class PaymentController {
         }
     }
     @DeleteMapping("/cancel")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> cancelPayment() {
         try {
             paymentService.cancelPayment();

@@ -12,13 +12,13 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*", exposedHeaders = "Authorization")
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/admin")
 public class AdminController {
 
     private final UserService userService;
 
     @GetMapping("/users/{page}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getUser(@PathVariable int page){
         try {
             return ResponseEntity.ok(Map.of("users", userService.getAllUsers(page)));

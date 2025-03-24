@@ -12,12 +12,12 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*", exposedHeaders = "Authorization")
+@PreAuthorize("isAuthenticated()")
 @RequestMapping("/api/orders")
 public class OrderController {
 
     private final OrderService orderService;
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<?> getAllOrdersByUser() {
         try {
@@ -27,7 +27,6 @@ public class OrderController {
         }
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable String id) {
         try {

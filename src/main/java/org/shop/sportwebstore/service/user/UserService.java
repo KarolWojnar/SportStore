@@ -71,6 +71,7 @@ public class UserService {
     }
 
     public String getAuth(AuthUser authRequest) {
+        log.info("Authenticating user: {}", authRequest.getEmail());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -85,6 +86,9 @@ public class UserService {
     }
 
     public Map<String, Object> login(AuthUser authRequest, HttpServletResponse response) {
+        if (authRequest.getEmail() == null || authRequest.getPassword() == null) {
+            throw new UserException("Email or password is null.");
+        }
         String token = getAuth(authRequest);
         String refreshToken = jwtUtil.generateToken(authRequest.getEmail(), refreshExp);
 
@@ -105,6 +109,9 @@ public class UserService {
 
     public void logout(HttpServletResponse response, HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+
+        jwtUtil.addToBlackList(extractAccessToken(request));
+
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("Refresh-token".equals(cookie.getName())) {
@@ -119,6 +126,14 @@ public class UserService {
         SecurityContextHolder.clearContext();
 
         log.info("Logout successful");
+    }
+
+    private String extractAccessToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
     @Transactional
@@ -168,7 +183,9 @@ public class UserService {
         }
     }
 
+    @Transactional
     public String recoveryPassword(String email) {
+        log.info("Recovery password for email: {}", email);
         User user = userRepository.findByEmailAndEnabled(email, true).orElseThrow(() -> new UserException("Email not found."));
         Activation activation = activationRepository.save(new Activation(user.getId(), ActivationType.RESET_PASSWORD));
         emailService.sendEmailResetPassword(email, activation);
@@ -221,6 +238,7 @@ public class UserService {
     public UserDetailsDto updateUser(CustomerDto user) {
         User currentUser = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new UserException("User not found."));
+        log.info("Updating user: {}", currentUser.getId());
         Customer customer = customerRepository.findByUserId(currentUser.getId()).orElse(null);
         if (customer == null) {
             customer = new Customer();

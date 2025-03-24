@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
@@ -26,60 +27,91 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final UserDetailsImplService userDetailsService;
     private final JwtUtil jwtUtil;
-    @Value("${jwt.exp}")
-    private int exp;
+
+    @Value("${jwt.exp}") private int accessTokenExpiryMs;
+    @Value("${jwt.refresh.exp}") private int refreshTokenExpiryMs;
 
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request,
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
+
         String authHeader = request.getHeader("Authorization");
-        Cookie[] cookies = request.getCookies();
-        String token = null;
+        String accessToken;
         String username = null;
-        String refreshToken;
+        boolean shouldRefresh = false;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
+            accessToken = authHeader.substring(7);
+            if (jwtUtil.isBlackListed(accessToken)) {
+                log.info("Access token is blacklisted.");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Access token is blacklisted.");
+                return;
+            }
             try {
-                username = jwtUtil.extractUsername(token);
+                username = jwtUtil.extractUsername(accessToken);
+
+                Date expiration = jwtUtil.extractExpiration(accessToken);
+                long timeLeft = expiration.getTime() - System.currentTimeMillis();
+                if (timeLeft < accessTokenExpiryMs * 0.8) {
+                    shouldRefresh = true;
+                    log.debug("Access token nearing expiration, will refresh");
+                }
+
             } catch (ExpiredJwtException e) {
-                token = null;
-                log.info("Token has expired. Refreshing token...");
+                shouldRefresh = true;
+                log.info("Access token expired - requiring refresh");
             }
         }
 
-        if (token == null && cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("Refresh-token".equals(cookie.getName())) {
-                    refreshToken = cookie.getValue();
-                    try {
-                        username = jwtUtil.getSubject(refreshToken);
-                        UserDetails user = userDetailsService.loadUserByUsername(username);
-                        if (jwtUtil.validateToken(refreshToken, user)) {
-                            String newAccessToken = jwtUtil.generateToken(username, exp);
-                            response.setHeader("Authorization", "Bearer " + newAccessToken);
-                            token = newAccessToken;
+        if (shouldRefresh) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("Refresh-token".equals(cookie.getName())) {
+                        String refreshToken = cookie.getValue();
+                        try {
+                            username = jwtUtil.getSubject(refreshToken);
+                            UserDetails user = userDetailsService.loadUserByUsername(username);
+
+                            if (jwtUtil.validateToken(refreshToken, user)) {
+                                String newAccessToken = jwtUtil.generateToken(username, accessTokenExpiryMs);
+                                response.setHeader("Authorization", "Bearer " + newAccessToken);
+
+                                Date refreshExpiration = jwtUtil.extractExpiration(refreshToken);
+                                long refreshTimeLeft = refreshExpiration.getTime() - System.currentTimeMillis();
+                                if (refreshTimeLeft < refreshTokenExpiryMs * 0.8) {
+                                    String newRefreshToken = jwtUtil.generateToken(username, refreshTokenExpiryMs);
+                                    Cookie newRefreshCookie = new Cookie("Refresh-token", newRefreshToken);
+                                    newRefreshCookie.setHttpOnly(true);
+                                    newRefreshCookie.setSecure(true);
+                                    newRefreshCookie.setPath("/");
+                                    response.addCookie(newRefreshCookie);
+                                    log.info("Rotated both tokens for user: {}", username);
+                                } else {
+                                    log.info("Refreshed access token only for user: {}", username);
+                                }
+                            }
+                        } catch (ExpiredJwtException e) {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Refresh token expired");
+                            return;
                         }
-                    } catch (ExpiredJwtException e) {
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter().write("Refresh token has expired. Please log in again.");
-                        return;
+                        break;
                     }
-                    break;
                 }
             }
         }
 
-        if (username != null && token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails user = userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(token, user)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
+
         filterChain.doFilter(request, response);
     }
 }
