@@ -28,6 +28,7 @@ export class AuthStateService {
     this.isLoggedIn.next(value);
   }
   setAdmin(value: boolean) {
+    localStorage.setItem('isAdmin', value ? 'true' : 'false');
     this.isAdmin.next(value);
   }
   setDarkMode(value: boolean) {

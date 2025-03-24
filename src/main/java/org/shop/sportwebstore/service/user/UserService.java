@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ActivationType;
+import org.shop.sportwebstore.model.Roles;
 import org.shop.sportwebstore.model.dto.*;
 import org.shop.sportwebstore.model.entity.Activation;
 import org.shop.sportwebstore.model.entity.Cart;
@@ -17,12 +18,15 @@ import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.shop.sportwebstore.service.store.CartService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +53,7 @@ public class UserService {
     private final CartService cartService;
     private final ActivationRepository activationRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final MongoTemplate mongoTemplate;
     @Value("${jwt.exp}")
     private int exp;
     @Value("${jwt.refresh.exp}")
@@ -251,11 +256,29 @@ public class UserService {
         return UserDetailsDto.toDto(currentUser, customer);
     }
 
-    public List<UserDetailsDto> getAllUsers(int page) {
+    public List<UserDetailsDto> getAllUsers(int page, String search, String role, String enabled) {
         Pageable pageable = PageRequest.of(page, 10);
-        Page<User> users = userRepository.findAll(pageable);
+
+        Criteria criteria = new Criteria();
+
+        if (search != null && !search.isEmpty()) {
+            criteria.orOperator(
+                    Criteria.where("email").regex(search, "i")
+            );
+        }
+
+        if (role != null && !role.isEmpty()) {
+            criteria.and("role").is(Roles.valueOf(role));
+        }
+
+        if (enabled != null && !enabled.isEmpty()) {
+            criteria.and("enabled").is(Boolean.parseBoolean(enabled));
+        }
+
+        Query query = new Query(criteria).with(pageable);
+        List<User> users = mongoTemplate.find(query, User.class);
         if (users.isEmpty()) {
-            throw new UserException("No users found.");
+            throw new UsernameNotFoundException("No users found.");
         }
         List<Customer> customers = customerRepository.findAllByUserIdIn(users.stream().map(User::getId).toList());
         List<UserDetailsDto> userDetails = new ArrayList<>();
@@ -264,5 +287,17 @@ public class UserService {
             userDetails.add(UserDetailsDto.toDto(user, customer));
         }
         return userDetails;
+    }
+
+    public void changeUserStatus(String id, boolean status) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found."));
+        user.setEnabled(status);
+        userRepository.save(user);
+    }
+
+    public void changeUserRole(String id, String role) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found."));
+        user.setRole(Roles.valueOf(role));
+        userRepository.save(user);
     }
 }

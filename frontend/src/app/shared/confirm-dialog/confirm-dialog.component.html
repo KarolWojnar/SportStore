@@ -1,0 +1,10 @@
+<div class="bg-dark bg-opacity-25">
+  <h2 mat-dialog-title>{{ data.title }}</h2>
+  <mat-dialog-content class="text-black">
+    {{ data.message }}
+  </mat-dialog-content>
+  <mat-dialog-actions align="end" class="gap-2">
+    <button (click)="onNoClick()" class="btn btn-danger">Cancel</button>
+    <button (click)="onConfirm()" class="btn btn-primary">Confirm</button>
+  </mat-dialog-actions>
+</div>

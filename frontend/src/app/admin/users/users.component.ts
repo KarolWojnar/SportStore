@@ -1,8 +1,19 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  OnDestroy
+} from '@angular/core';
 import { AdminService } from '../../service/admin.service';
 import { UserDetails } from '../../model/user-dto';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { ConfirmationDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-users',
@@ -10,7 +21,8 @@ import { RouterLink } from '@angular/router';
     NgClass,
     RouterLink,
     NgIf,
-    NgForOf
+    NgForOf,
+    FormsModule
   ],
   standalone: true,
   templateUrl: './users.component.html',
@@ -23,46 +35,76 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
   page: number = 0;
   hasMoreUsers: boolean = true;
   isLoadingNextData: boolean = false;
-  private observer: IntersectionObserver | null = null;
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   @ViewChild('lastUserElement', { static: false }) lastUserElement!: ElementRef;
+  search: string = '';
+  role: "ROLE_ADMIN" | "ROLE_CUSTOMER" | null = null;
+  enabled: boolean | null = null;
+  private observer: IntersectionObserver | null = null;
 
-  constructor(private adminService: AdminService) { }
+  constructor(private adminService: AdminService,
+              private dialog: MatDialog) { }
 
   ngOnInit(): void {
-    this.isLoading = true;
-    this.loadUsers();
+    this.setupSearchListener();
+    this.loadUsers(true);
   }
 
   ngOnDestroy(): void {
-    if (this.observer) {
-      this.observer.disconnect();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.disconnectObserver();
   }
 
   ngAfterViewInit(): void {
     this.setupIntersectionObserver();
   }
 
-  loadUsers(): void {
+  private setupSearchListener(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.resetAndLoadUsers();
+    });
+  }
+
+  private resetAndLoadUsers(): void {
+    this.page = 0;
+    this.users = [];
+    this.hasMoreUsers = true;
+    this.loadUsers(true);
+  }
+
+  loadUsers(initialLoad: boolean = false): void {
     if (this.isLoadingNextData) return;
 
-    this.isLoadingNextData = true;
-    this.adminService.getAllUsers(this.page).subscribe({
+    initialLoad ? this.isLoading = true : this.isLoadingNextData = true;
+
+    this.adminService.getAllUsers(this.page, this.search, this.role, this.enabled).subscribe({
       next: (response) => {
         this.users = [...this.users, ...response.users];
-        this.hasMoreUsers = response.users.length > 9;
+        this.hasMoreUsers = response.users.length === 10;
+        this.errorMessage = '';
+      },
+      error: (error) => {
+        if (error.status === 404) {
+          this.hasMoreUsers = false;
+          this.errorMessage = '';
+          this.isLoadingNextData = false;
+          this.isLoading = false;
+          return;
+        }
+        this.errorMessage = 'Failed to load users. Please try again later.';
+        console.error('Error loading users:', error);
+      },
+      complete: () => {
         this.isLoading = false;
         this.isLoadingNextData = false;
         setTimeout(() => this.updateObserver(), 100);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.isLoadingNextData = false;
-        if (this.page == 0) {
-          console.error('Error loading users:', error);
-          this.errorMessage = 'Failed to load users. Please try again later.';
-        }
       }
     });
   }
@@ -71,34 +113,102 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
     return role === 'ROLE_ADMIN' ? 'text-bg-danger' : 'text-bg-success';
   }
 
-  setupIntersectionObserver(): void {
-    const options = {
-      root: null,
-      rootMargin: '100px',
-      threshold: 0.5
-    };
-
+  private setupIntersectionObserver(): void {
     this.observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && this.hasMoreUsers && !this.isLoadingNextData) {
-          console.log('Loading more users, page:', this.page + 1);
           this.page++;
           this.loadUsers();
         }
       });
-    }, options);
+    }, {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0.5
+    });
 
-    setTimeout(() => this.updateObserver(), 100);
+    this.updateObserver();
   }
 
-  updateObserver(): void {
+  private updateObserver(): void {
+    this.disconnectObserver();
+
+    if (this.lastUserElement?.nativeElement && this.hasMoreUsers) {
+      this.observer?.observe(this.lastUserElement.nativeElement);
+    }
+  }
+
+  private disconnectObserver(): void {
     if (this.observer) {
       this.observer.disconnect();
     }
+  }
 
-    if (this.lastUserElement && this.observer && this.hasMoreUsers) {
-      console.log('Observer updated for new last element');
-      this.observer.observe(this.lastUserElement.nativeElement);
-    }
+  onSearch(): void {
+    this.searchSubject.next(this.search);
+  }
+
+  toggleRole(selectedRole: "ROLE_ADMIN" | "ROLE_CUSTOMER"): void {
+    this.role = this.role === selectedRole ? null : selectedRole;
+    this.resetAndLoadUsers();
+  }
+
+  toggleActivationStatus(status: boolean): void {
+    this.enabled = this.enabled === status ? null : status;
+    this.resetAndLoadUsers();
+  }
+
+  setActivation(id: string, enabled: boolean) {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: enabled ? 'Activate User' : 'Deactivate User',
+        message: `Are you sure you want to ${enabled ? 'activate' : 'deactivate'} this user?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.setActivationUser(id, enabled).subscribe({
+          next: () => {
+            this.users = this.users.map(user => {
+              if (user.id === id) {
+                return { ...user, enabled };
+              }
+              return user;
+            });
+          },
+          error: (error) => {
+            console.error('Error setting activation status:', error);
+          }
+        });
+      }
+    });
+  }
+
+  setAsAdmin(id: string) {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'New admin',
+        message: `Are you sure you want to make this user an admin?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.adminService.setRole(id, 'ROLE_ADMIN').subscribe({
+          next: () => {
+            this.users = this.users.map(user => {
+              if (user.id === id) {
+                return { ...user, role: 'ROLE_ADMIN' };
+              }
+              return user;
+            });
+          },
+          error: (error) => {
+            console.error('Error setting activation status:', error);
+          }
+        });
+      }
+    });
   }
 }

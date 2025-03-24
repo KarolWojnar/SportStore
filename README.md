@@ -1,7 +1,7 @@
 # Shop Application - Spring Boot, Angular, MongoDB, Redis, Docker
 
 ## Project overview 
-This is a monolithic e-commerce application built with:
+Monolithic e-commerce application with payment processing via Stripe.
 - **Backend:** Spring Boot (RESTful API)
 - **Frontend:** Angular with Bootstrap
 - **Database:** MongoDB (primary data store)
@@ -19,8 +19,23 @@ This is a monolithic e-commerce application built with:
 🛠️ Product management (availability toggle)  
 🛠️ Customer order viewing/refunding  
 
-## Technology Stack
+### Payment Processing
+💰 **Stripe Integration**
+- Secure credit card payments
+- Automated payment confirmation via webhooks
+- Support for payment retries
+- Order status synchronization (Created (Before payment) → Processing (After successful payment))
 
+### Development Setup
+#### Get Stripe Test Keys
+- Register at Stripe Dashboard
+- Set keys in .env file
+
+#### Test Cards
+- Success: `4242 4242 4242 4242`
+- Decline: `4000 0000 0000 0002`
+
+## Technology Stack
 | Component        | Technology                       |
 |------------------|----------------------------------|
 | Backend          | Java 17, Spring Boot 3.4.3       |
@@ -58,9 +73,8 @@ This is a monolithic e-commerce application built with:
 
 ### Quick Start with Docker
 1. Clone the repository:
-   ```bash
-   git clone [https://github.com/your-repo/shop-app.git](https://github.com/KarolWojnar/SportStore.git)
-   cd sportstore
+   - git clone [https://github.com/your-repo/shop-app.git](https://github.com/KarolWojnar/SportStore.git)
+   - `cd sportstore`
 2. Set up `.env`:
 ```yaml
   # Secret key used for generating and verifying JWT tokens
@@ -91,3 +105,32 @@ docker-compose up -d --build
 `
 http://localhost:8080/swagger-ui/index.html
 `
+
+### Project Structure
+```yaml
+shop-app/              # Spring Boot application
+├── src/main/java/org/shop/sortwebstore
+│   ├── config/        # Security & application config
+│   ├── controller/    # REST controllers
+│   ├── model/         # Data models (Product, User, Order)
+│   ├── repository/    # MongoDB repositories
+│   ├── service/       # Business logic
+│   └── exception/     # Custom exception handler
+├── Dockerfile
+└── build.gradle
+│
+├── frontend/                # Angular application
+│   ├── public/
+│   ├── src/
+│   │   ├── app/ 
+│   │   │    ├── routes      # Main router
+│   │   │    ├── components/ # Angular components
+│   │   │    └── services/   # Api services communication
+│   │   ├── styles.css       # Main style
+│   │   └── index.html       # Main index
+│   ├── Dockerfile
+│   └── package.json
+│
+├── compose.yml              # Orchestration config
+└── README.md                # This file
+```
