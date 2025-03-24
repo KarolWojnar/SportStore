@@ -13,6 +13,7 @@ import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.CategoryRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.shop.sportwebstore.repository.UserRepository;
+import org.shop.sportwebstore.service.ValidationUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +21,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +65,21 @@ public class StoreService {
 
     public Map<String, Object> getProducts(int page, int size, String sort, String direction,
                                            String search, List<String> categories) {
+        for (String category : categories) {
+            log.info("Category: {}", category);
+        }
+        Page<Product> products = fetchProducts(page, size, sort, direction, search, categories);
+        Map<String, Object> response = new java.util.HashMap<>(Map.of(
+                "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
+                "totalElements", products.getTotalElements()
+        ));
+        if (page == 0) {
+            response.put("categories", getCategories());
+        }
+        return response;
+    }
+
+    private Page<Product> fetchProducts(int page, int size, String sort, String direction, String search, List<String> categories) {
         Sort.Direction direct = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sortObj = Sort.by(direct, sort);
         Pageable pageable = PageRequest.of(page, size, sortObj);
@@ -66,10 +89,7 @@ public class StoreService {
         } else {
             products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, pageable);
         }
-        return Map.of(
-                "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
-                "totalElements", products.getTotalElements()
-        );
+        return products;
     }
 
     public List<String> getCategories() {
@@ -169,4 +189,51 @@ public class StoreService {
         productRepository.save(product);
     }
 
+    public ProductDto changeProductData(String id, ProductDto productDto) {
+        if (!productDto.getId().equals(id)) {
+            throw new ProductException("Product id must be the same.");
+        }
+        ValidationUtil.validProductData(productDto);
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setAmountLeft(productDto.getQuantity());
+        return ProductDto.minEdited(productRepository.save(product));
+    }
+
+    @Transactional
+    public ProductDto addProduct(ProductDto product, MultipartFile image) {
+        ValidationUtil.validProductData(product);
+        ValidationUtil.validRestProduct(product);
+
+        product.setImage(saveImage(image));
+
+        List<Category> categories = categoryRepository.findAllByNameIn(product.getCategories());
+        return ProductDto.minDto(productRepository.save(ProductDto.toEntity(product, categories)));
+    }
+
+    private static String saveImage(MultipartFile image) {
+        String fileName = UUID.randomUUID().toString();
+        if (image != null && !image.isEmpty()) {
+            if (!image.getContentType().equals("image/png")) {
+                throw new RuntimeException("Only PNG files are allowed!");
+            }
+            try {
+                fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+
+                Path uploadPath = Paths.get("src/main/resources/static/images");
+
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Nie udało się zapisać pliku: " + e.getMessage());
+            }
+        }
+        return fileName;
+    }
 }

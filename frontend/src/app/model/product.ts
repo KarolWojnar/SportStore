@@ -1,5 +1,3 @@
-
-
 export interface Product {
     id: string;
     name: string;
@@ -22,4 +20,27 @@ export interface ProductCart {
   rated: boolean;
 }
 
+export interface ProductDetails {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  rating: number;
+  image?: string;
+  soldItems: number;
+  categories: string[];
+}
+
+export interface ProductInfo {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface ProductsResponse {
+  totalElements: number;
+  categories: string[];
+  products: ProductDetails[];
+}
 

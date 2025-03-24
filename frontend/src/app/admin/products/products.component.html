@@ -1,1 +1,142 @@
-<p>products admin works!</p>
+<div class="container">
+  <div class="d-flex justify-content-between">
+    <h4 class="mb-4"><a routerLink="/admin" class="text-reset">Admin</a> → Products</h4>
+    <div class="d-flex justify-content-end align-items-center gap-2">
+      <button class="btn btn-primary btn-sm rounded-2" routerLink="/admin/products/new" id="top">
+        Add Product
+      </button>
+      </div>
+    </div>
+  <div class="d-flex gap-2 mb-2 justify-content-end">
+    <div class="ms-auto">
+      <button *ngFor="let category of categories"
+              class="mx-1 mb-1"
+              [ngClass]="['btn btn-sm rounded-2', selectedCategories.includes(category) ? 'btn-info' : 'btn-outline-secondary']"
+              (click)="filterByCategory(category)">
+        {{ category }}
+      </button>
+
+      <button *ngIf="selectedCategories.length > 0"
+              class="btn btn-outline-danger btn-sm rounded-2 mx-1 mb-1"
+              (click)="clearCategoryFilters()">
+        Clear Filters
+      </button>
+    </div>
+
+    <div class="col-md-3">
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        placeholder="Search..."
+        [(ngModel)]="search"
+        (input)="onSearch()"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="isLoading && products.length === 0" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && products.length === 0" class="alert alert-info">
+    No products found.
+  </div>
+
+  <div *ngIf="products.length > 0" class="list-group">
+    <div *ngFor="let product of products; let last = last" class="product-card px-2 py-1 border-2 mb-3 shadow rounded-3">
+      <div class="d-flex justify-content-between">
+        <div class="d-flex">
+          <div class="product-image me-3">
+            <img *ngIf="product.image" [src]="'http://localhost:8080/' + product.image" alt="{{ product.name }}" class="" style="height: 80px;">
+            <div *ngIf="!product.image" class="no-image p-3 text-center bg-light" style="width: 80px; height: 80px;">
+              No Image
+            </div>
+          </div>
+          <div>
+            <h5 class="mb-1">{{ product.name }}</h5>
+            <p class="mb-1">ID: {{ product.id }}</p>
+            <small>Price: ${{ product.price.toFixed(2) }}</small>
+          </div>
+        </div>
+        <div class="d-flex flex-column align-items-end gap-1">
+          <small class="rounded-4 px-2" [ngClass]="getStockClass(product.quantity)" style="font-size: 0.8rem; font-weight: bold;">
+            {{ product.quantity > 0 ? 'In Stock (' + product.quantity + ')' : 'Out of Stock' }}
+          </small>
+          <small class="rounded-4 px-2 text-bg-info" style="font-size: 0.8rem; font-weight: bold;">
+            Rating: {{ product.rating.toFixed(1) }}
+          </small>
+        </div>
+      </div>
+      <div *ngIf="expandedProductId != product.id && !edited" class="d-flex justify-content-between align-items-center mt-2">
+        <div>
+          <p class="mb-1">
+            <strong>Categories:</strong>
+            <span *ngFor="let category of product.categories; let last = last" class="badge bg-secondary me-1">
+              {{ category }}{{ !last ? '' : '' }}
+            </span>
+            <span *ngIf="product.categories.length === 0">None</span>
+          </p>
+        </div>
+        <div class="d-flex justify-content-end align-items-center gap-2">
+          <button class="btn btn-outline-primary btn-sm rounded-2" (click)="editProduct(product)">
+            Edit
+          </button>
+        </div>
+      </div>
+      <div *ngIf="expandedProductId === product.id" class="rounded p-2 bg-primary bg-opacity-10 shadow mt-2">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-control"
+                     [(ngModel)]="editedProduct.name" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label class="form-label">Price</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="editedProduct.price" step="0.01">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label class="form-label">Stock Quantity</label>
+              <input type="number" class="form-control"
+                     [(ngModel)]="editedProduct.quantity" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-outline-warning btn-sm"
+                  (click)="resetData(product)">
+            <fa-icon [icon]="faArrowRotateRight"></fa-icon>
+          </button>
+          <button class="btn btn-outline-secondary btn-sm"
+                  (click)="cancelEdit()">Cancel</button>
+          <button class="btn btn-primary btn-sm"
+                  (click)="saveProductChanges(product.id)">Save</button>
+        </div>
+      </div>
+      <div #lastProductElement *ngIf="last"></div>
+    </div>
+
+    <div class="d-flex justify-content-center my-3" (click)="scrollToTop()">
+        <button class="btn text-reset">
+          <fa-icon [icon]="faArrowUp"></fa-icon>
+        </button>
+    </div>
+
+    <div *ngIf="isLoadingNextData" class="d-flex justify-content-center my-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading more...</span>
+      </div>
+    </div>
+  </div>
+</div>

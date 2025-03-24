@@ -38,11 +38,33 @@ public class ProductDto {
         return productDto;
     }
 
+    public static Product toEntity(ProductDto productDto, List<Category> categories) {
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setImageUrl(productDto.getImage());
+        product.setAmountLeft(0);
+        product.setDescription(productDto.getDescription());
+        product.setOrders(0);
+        product.setRatings(null);
+        product.setCategories(categories);
+        return product;
+    }
+
     public static ProductDto minDto(Product product) {
         ProductDto productDto = new ProductDto();
         productDto.setName(product.getName());
         productDto.setPrice(product.getPrice());
         productDto.setImage(product.getImageUrl());
+        productDto.setId(product.getId());
+        return productDto;
+    }
+
+    public static ProductDto minEdited(Product product) {
+        ProductDto productDto = new ProductDto();
+        productDto.setName(product.getName());
+        productDto.setPrice(product.getPrice());
+        productDto.setQuantity(product.getAmountLeft());
         productDto.setId(product.getId());
         return productDto;
     }

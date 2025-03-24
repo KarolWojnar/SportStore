@@ -1,0 +1,7 @@
+.product-card {
+  background-color: rgba(176, 176, 248, 0.12);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(200, 171, 171, 0.87);
+  }
+}

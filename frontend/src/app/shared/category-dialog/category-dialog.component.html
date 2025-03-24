@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+  <p>{{ data.message }}</p>
+  <p *ngIf="data.categories && data.categories.length > 0">
+    Current categories:
+    <span *ngFor="let category of data.categories; let last = last" class="badge bg-secondary me-1">
+          {{ category }}{{ !last ? '' : '' }}
+        </span>
+  </p>
+  <div class="mb-3">
+    <input type="text" class="form-control" [(ngModel)]="categoryName" placeholder="Category name">
+  </div>
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="dialogRef.close()">Cancel</button>
+  <button mat-button [disabled]="!categoryName" (click)="addCategory()">Add</button>
+</mat-dialog-actions>
