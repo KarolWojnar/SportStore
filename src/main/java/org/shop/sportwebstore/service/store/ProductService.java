@@ -24,10 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -129,7 +126,8 @@ public class ProductService {
 
     public Map<String, Object> getDetails(String id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
-        List<Product> relatedProducts = productRepository.findTop4ByCategoriesInAndIdNot(Collections.singleton(product.getCategories()), id);
+        Collection<List<Category>> categories = Collections.singleton(product.getCategories());
+        List<Product> relatedProducts = productRepository.findTop4ByCategoriesInAndIdNot(categories, id);
         return Map.of(
                 "product", ProductDto.toDto(product, true),
                 "relatedProducts", relatedProducts.stream().map(ProductDto::minDto).toList());
@@ -156,5 +154,12 @@ public class ProductService {
 
         orderService.setOrderProductAsRated(rateProductDto.getOrderId(), rateProductDto.getProductId());
         productRepository.save(product);
+    }
+
+    public Category addCategory(String category) {
+        if (categoryRepository.existsByName(category)) {
+            throw new ProductException("Category already exists.");
+        }
+        return categoryRepository.save(new Category(category));
     }
 }

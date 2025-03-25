@@ -11,7 +11,6 @@ import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
 import { ProductDetails, ProductInfo } from '../../model/product';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowRotateRight, faArrowUp } from '@fortawesome/free-solid-svg-icons';
@@ -33,7 +32,7 @@ import { faArrowRotateRight, faArrowUp } from '@fortawesome/free-solid-svg-icons
 export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
   products: ProductDetails[] = [];
   isLoading: boolean = true;
-  errorMessage: string = '';
+  errorMessage: string | null = null;
   page: number = 0;
   hasMoreProducts: boolean = true;
   isLoadingNextData: boolean = false;
@@ -56,9 +55,10 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
   category: string | null = null;
   private observer: IntersectionObserver | null = null;
   edited = false;
+  newCategory = null;
+  showForm = false;
 
-  constructor(private adminService: AdminService,
-              private dialog: MatDialog) { }
+  constructor(private adminService: AdminService) { }
 
   ngOnInit(): void {
     this.setupSearchListener();
@@ -228,5 +228,25 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetData(product: ProductDetails) {
     this.editedProduct = { ...product };
+  }
+
+  toggleFormCategory() {
+    this.showForm = !this.showForm;
+  }
+
+  saveCategory() {
+    if (this.newCategory) {
+      this.adminService.addCategory(this.newCategory).subscribe({
+        next: (response) => {
+          this.categories.push(response.category.name);
+          this.newCategory = null;
+          this.errorMessage = null;
+          this.showForm = false;
+        },
+        error: (error) => {
+          this.errorMessage = error.error.message;
+        }
+      });
+    }
   }
 }

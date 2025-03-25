@@ -1,1 +1,73 @@
-<p>orders admin works!</p>
+<div class="container">
+  <div class="d-flex justify-content-between">
+    <h4 class="mb-4"><a routerLink="/admin" class="text-reset">Admin</a> → Orders</h4>
+    <div class="d-flex justify-content-end align-items-center gap-2">
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-2 justify-content-end">
+    <div class="d-flex flex-wrap gap-1">
+      <button *ngIf="selectedStatus"
+              class="btn btn-outline-danger btn-sm rounded-2"
+              (click)="clearStatusFilters()">
+        Clear Filters
+      </button>
+      <button *ngFor="let status of orderStatuses"
+              class="btn btn-sm rounded-2"
+              [ngClass]="selectedStatus === status ? 'btn-info' : 'btn-outline-secondary'"
+              (click)="filterByStatus(status)">
+        {{ status }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading && orders.length === 0" class="d-flex justify-content-center align-items-center" style="height: 200px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && orders.length === 0" class="alert alert-info">
+    No orders found.
+  </div>
+
+  <div *ngIf="orders.length > 0" class="list-group">
+    <div *ngFor="let order of orders; let last = last" class="order-card px-2 py-1 border-2 mb-3 shadow rounded-3">
+      <div class="d-flex justify-content-between">
+        <div>
+          <h5 class="mb-1">Order #{{ order.id }}</h5>
+          <p class="mb-1">Date: {{ order.orderDate | date:'dd-MM-YYYY, HH:mm' }}</p>
+          <p *ngIf="order.deliveryDate" class="mb-1">Delivery: {{ order.deliveryDate | date:'dd-MM-YYYY, HH:mm' }}</p>
+          <small>Total: ${{ order.totalPrice.toFixed(2) }}</small>
+        </div>
+        <div class="d-flex flex-column align-items-end gap-1">
+          <span class="badge" [ngClass]="getStatusClass(order.status)">
+            {{ order.status }}
+          </span>
+          <div *ngIf="order.status === 'CREATED'" class="d-flex gap-2">
+            <button class="btn btn-outline-danger btn-sm" (click)="cancelOrder(order.id)">
+              Cancel Order
+            </button>
+          </div>
+        </div>
+      </div>
+      <div #lastOrderElement *ngIf="last"></div>
+    </div>
+
+    <div class="d-flex justify-content-center my-3" (click)="scrollToTop()">
+      <button class="btn text-reset">
+        <fa-icon [icon]="faArrowUp"></fa-icon>
+      </button>
+    </div>
+
+    <div *ngIf="isLoadingNextData" class="d-flex justify-content-center my-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading more...</span>
+      </div>
+    </div>
+  </div>
+</div>

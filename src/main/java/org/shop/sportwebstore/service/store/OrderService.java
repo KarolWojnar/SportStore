@@ -17,6 +17,9 @@ import org.shop.sportwebstore.repository.OrderRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.shop.sportwebstore.service.user.EmailService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -136,5 +139,26 @@ public class OrderService {
         } catch (Exception e) {
             log.error("Error sending email: {}", e.getMessage());
         }
+    }
+
+    public List<OrderBaseDto> getOrders(int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders;
+        if (status == null || status.isEmpty()) {
+            orders = orderRepository.findAll(pageable);
+        } else {
+            orders = orderRepository.findAllByStatus(OrderStatus.valueOf(status), pageable);
+        }
+        return orders.stream().map(OrderBaseDto::mapToDto).toList();
+    }
+
+    public void cancelOrder(String id) {
+        Order order = orderRepository.findById(id).orElseThrow(() -> new ProductException("Order not found."));
+        if (order.getStatus() != OrderStatus.CREATED) {
+            throw new PaymentException("Order already paid.");
+        }
+        order.getProducts().forEach(product -> productRepository.incrementAmountLeftById(product.getProductId(), product.getAmount()));
+        order.setStatus(OrderStatus.ANNULLED);
+        orderRepository.save(order);
     }
 }
