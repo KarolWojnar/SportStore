@@ -24,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -152,13 +153,37 @@ public class OrderService {
         return orders.stream().map(OrderBaseDto::mapToDto).toList();
     }
 
-    public void cancelOrder(String id) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new ProductException("Order not found."));
-        if (order.getStatus() != OrderStatus.CREATED) {
+    public void cancelOrder(String id, boolean isAdmin) {
+        Order order;
+        if (isAdmin) {
+            order = orderRepository.findById(id).orElseThrow(() -> new ProductException("Order not found."));
+        } else {
+            order = findOrderByUserAndId(id);
+        }
+        if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.PROCESSING) {
             throw new PaymentException("Order already paid.");
         }
         order.getProducts().forEach(product -> productRepository.incrementAmountLeftById(product.getProductId(), product.getAmount()));
         order.setStatus(OrderStatus.ANNULLED);
+        orderRepository.save(order);
+    }
+
+    private Order findOrderByUserAndId(String id) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserException("User not found."));
+        return orderRepository.findByIdAndUserId(id, user.getId()).orElseThrow(() -> new PaymentException("Order not found."));
+    }
+
+    public void refundOrder(String id) {
+        Order order = findOrderByUserAndId(id);
+
+        if (order.getOrderDate().before(new Date(System.currentTimeMillis() - 1209600000))) {
+            throw new PaymentException("Order date is more than 14 days ago.");
+        }
+        if (order.getStatus() != OrderStatus.DELIVERED) {
+            throw new PaymentException("Order not delivered.");
+        }
+        order.setStatus(OrderStatus.REFUNDED);
         orderRepository.save(order);
     }
 }

@@ -138,4 +138,12 @@ export class StoreService {
   rateProduct(rating: OrderRatingProduct) {
     return this.httpClient.patch(`${this.apiUrl}/rate`, rating);
   }
+
+  cancelOrder(orderId: string) {
+    return this.httpClient.patch(`${this.apiUrlOrder}/cancel/${orderId}`, null);
+  }
+
+  refundOrder(orderId: string) {
+    return this.httpClient.patch(`${this.apiUrlOrder}/refund/${orderId}`, null);
+  }
 }

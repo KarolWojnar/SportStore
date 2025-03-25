@@ -41,15 +41,15 @@
           <div *ngIf="errorMessagePayment" class="alert alert-danger mt-2 mb-0">
             {{ errorMessagePayment }}
           </div>
+          <div *ngIf="order.status === 'PROCESSING' || order.status === 'CREATED'">
+            <a (click)="cancelOrder()" class="btn btn-warning btn-sm rounded-2 mt-2 w-100 fw-bold">Cancel order</a>
+          </div>
           <div *ngIf="order.status === 'CREATED'">
             <a (click)="payForOrder()" class="btn btn-success btn-sm rounded-2 mt-2 w-100 fw-bold">Pay for the order</a>
             <small class="text-danger text-decoration-underline d-flex justify-content-center">You have {{ timeToDelete }} to pay, otherwise order will be deleted!</small>
           </div>
-          <div *ngIf="order.status === 'PROCESSING'">
-            <a (click)="cancelOrder()" class="btn btn-warning btn-sm rounded-2 mt-2 w-100 fw-bold">Cancel order</a>
-          </div>
           <div *ngIf="order.status === 'DELIVERED' && canRefund">
-            <a (click)="cancelOrder()" class="btn btn-danger btn-sm rounded-2 mt-2 w-100 fw-bold">Refund order</a>
+            <a (click)="refundOrder()" class="btn btn-danger btn-sm rounded-2 mt-2 w-100 fw-bold">Refund order</a>
           </div>
         </div>
       </div>

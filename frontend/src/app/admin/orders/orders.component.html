@@ -48,7 +48,7 @@
           <span class="badge" [ngClass]="getStatusClass(order.status)">
             {{ order.status }}
           </span>
-          <div *ngIf="order.status === 'CREATED'" class="d-flex gap-2">
+          <div *ngIf="order.status === 'CREATED' || order.status === 'PROCESSING'" class="d-flex gap-2">
             <button class="btn btn-outline-danger btn-sm" (click)="cancelOrder(order.id)">
               Cancel Order
             </button>
