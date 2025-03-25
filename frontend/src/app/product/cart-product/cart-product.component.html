@@ -2,7 +2,7 @@
   <a [routerLink]="['/products', product.id]" class="nav-link">
     <div class="card-body position-relative">
       <div class="product-image-container">
-        <span class="product-rating">{{ product.rating }} / 5.0</span>
+        <span class="product-rating">{{ product.rating }} / 5</span>
         <img #productImg [src]="'http://localhost:8080/' + product.image" [alt]="'no image'" class="card-img p-1 mb-1">
       </div>
       <h5 class=""><p [innerHTML]="product.name | highlight:search"></p></h5>

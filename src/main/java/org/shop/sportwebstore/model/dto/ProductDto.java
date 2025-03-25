@@ -6,6 +6,7 @@ import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -43,10 +44,10 @@ public class ProductDto {
         product.setName(productDto.getName());
         product.setPrice(productDto.getPrice());
         product.setImageUrl(productDto.getImage());
-        product.setAmountLeft(0);
+        product.setAmountLeft(productDto.getQuantity());
         product.setDescription(productDto.getDescription());
         product.setOrders(0);
-        product.setRatings(null);
+        product.setRatings(Map.of(0, 0.0));
         product.setCategories(categories);
         return product;
     }

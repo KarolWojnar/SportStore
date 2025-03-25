@@ -4,7 +4,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Order, OrderRatingProduct } from '../../model/order';
 import { CurrencyPipe, DatePipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatIcon } from '@angular/material/icon';
 import { ProductCart } from '../../model/product';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -19,7 +18,6 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     NgIf,
     RouterLink,
     MatProgressSpinner,
-    MatIcon,
     FaIconComponent
   ],
   standalone: true,

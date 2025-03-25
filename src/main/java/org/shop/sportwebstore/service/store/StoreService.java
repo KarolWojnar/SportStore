@@ -1,5 +1,7 @@
 package org.shop.sportwebstore.service.store;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.ProductException;
@@ -28,10 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -65,9 +64,6 @@ public class StoreService {
 
     public Map<String, Object> getProducts(int page, int size, String sort, String direction,
                                            String search, List<String> categories) {
-        for (String category : categories) {
-            log.info("Category: {}", category);
-        }
         Page<Product> products = fetchProducts(page, size, sort, direction, search, categories);
         Map<String, Object> response = new java.util.HashMap<>(Map.of(
                 "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
@@ -202,38 +198,45 @@ public class StoreService {
     }
 
     @Transactional
-    public ProductDto addProduct(ProductDto product, MultipartFile image) {
+    public ProductDto addProduct(String productJson, MultipartFile image) {
+        ProductDto product;
+        try {
+            product = new ObjectMapper().readValue(productJson, ProductDto.class);
+        } catch (JsonProcessingException e) {
+            throw new ProductException("Error parsing product data: " + e.getMessage());
+        }
+
         ValidationUtil.validProductData(product);
         ValidationUtil.validRestProduct(product);
 
         product.setImage(saveImage(image));
 
-        List<Category> categories = categoryRepository.findAllByNameIn(product.getCategories());
+        List<Category> categories = categoryRepository.findByNameIn(product.getCategories());
+
         return ProductDto.minDto(productRepository.save(ProductDto.toEntity(product, categories)));
     }
 
-    private static String saveImage(MultipartFile image) {
-        String fileName = UUID.randomUUID().toString();
-        if (image != null && !image.isEmpty()) {
-            if (!image.getContentType().equals("image/png")) {
-                throw new RuntimeException("Only PNG files are allowed!");
-            }
-            try {
-                fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+    private String saveImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) return null;
 
-                Path uploadPath = Paths.get("src/main/resources/static/images");
-
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            } catch (IOException e) {
-                throw new RuntimeException("Nie udało się zapisać pliku: " + e.getMessage());
-            }
+        if (!"image/png".equals(image.getContentType())) {
+            throw new RuntimeException("Allowed files: PNG!");
         }
-        return fileName;
+
+        try {
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            Path uploadDir = Paths.get("external-images");
+
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            Path filePath = uploadDir.resolve(fileName);
+            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            return "external-images/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save file: " + e.getMessage());
+        }
     }
 }

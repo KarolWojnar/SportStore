@@ -71,7 +71,7 @@ public class AdminController {
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("Error fetching users: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error fetching products: " + e.getMessage()));
         }
     }
 
@@ -85,10 +85,10 @@ public class AdminController {
     }
 
     @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addProduct(@RequestPart("product") ProductDto productDto,
+    public ResponseEntity<?> addProduct(@RequestPart("product") String productJson,
                                         @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            return ResponseEntity.ok(Map.of("product", storeService.addProduct(productDto, file)));
+            return ResponseEntity.ok(Map.of("product", storeService.addProduct(productJson, file)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error adding product: " + e.getMessage()));
         }
