@@ -6,6 +6,7 @@ import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -38,11 +39,33 @@ public class ProductDto {
         return productDto;
     }
 
+    public static Product toEntity(ProductDto productDto, List<Category> categories) {
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setImageUrl(productDto.getImage());
+        product.setAmountLeft(productDto.getQuantity());
+        product.setDescription(productDto.getDescription());
+        product.setOrders(0);
+        product.setRatings(Map.of(0, 0.0));
+        product.setCategories(categories);
+        return product;
+    }
+
     public static ProductDto minDto(Product product) {
         ProductDto productDto = new ProductDto();
         productDto.setName(product.getName());
         productDto.setPrice(product.getPrice());
         productDto.setImage(product.getImageUrl());
+        productDto.setId(product.getId());
+        return productDto;
+    }
+
+    public static ProductDto minEdited(Product product) {
+        ProductDto productDto = new ProductDto();
+        productDto.setName(product.getName());
+        productDto.setPrice(product.getPrice());
+        productDto.setQuantity(product.getAmountLeft());
         productDto.setId(product.getId());
         return productDto;
     }

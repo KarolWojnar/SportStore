@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserDetails } from '../model/user-dto';
+import { ProductInfo, ProductsResponse } from '../model/product';
 
 @Injectable({
   providedIn: 'root'
@@ -33,5 +34,23 @@ export class AdminService {
 
   setRole(id: string, role: string) {
     return this.httpClient.patch(`${this.apiUrl}/users/${id}/role`, role);
+  }
+
+  getAllProducts(page: number, search?: string, category: string[] = []): Observable<ProductsResponse> {
+    let params = new HttpParams().set('page', page.toString());
+
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    if (category.length > 0) {
+      params = params.set('categories', category.join(', '));
+    }
+
+    return this.httpClient.get<ProductsResponse>(`${this.apiUrl}/products`, { params });
+  }
+
+  updateProduct(productId: string, editedProduct: ProductInfo): Observable<{product: ProductInfo}> {
+    return this.httpClient.patch<{product: ProductInfo}>(`${this.apiUrl}/products/${productId}`, editedProduct);
   }
 }

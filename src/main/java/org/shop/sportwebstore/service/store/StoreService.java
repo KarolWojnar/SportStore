@@ -1,5 +1,7 @@
 package org.shop.sportwebstore.service.store;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.ProductException;
@@ -13,6 +15,7 @@ import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.CategoryRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.shop.sportwebstore.repository.UserRepository;
+import org.shop.sportwebstore.service.ValidationUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,10 +23,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +64,18 @@ public class StoreService {
 
     public Map<String, Object> getProducts(int page, int size, String sort, String direction,
                                            String search, List<String> categories) {
+        Page<Product> products = fetchProducts(page, size, sort, direction, search, categories);
+        Map<String, Object> response = new java.util.HashMap<>(Map.of(
+                "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
+                "totalElements", products.getTotalElements()
+        ));
+        if (page == 0) {
+            response.put("categories", getCategories());
+        }
+        return response;
+    }
+
+    private Page<Product> fetchProducts(int page, int size, String sort, String direction, String search, List<String> categories) {
         Sort.Direction direct = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sortObj = Sort.by(direct, sort);
         Pageable pageable = PageRequest.of(page, size, sortObj);
@@ -66,10 +85,7 @@ public class StoreService {
         } else {
             products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, pageable);
         }
-        return Map.of(
-                "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
-                "totalElements", products.getTotalElements()
-        );
+        return products;
     }
 
     public List<String> getCategories() {
@@ -169,4 +185,58 @@ public class StoreService {
         productRepository.save(product);
     }
 
+    public ProductDto changeProductData(String id, ProductDto productDto) {
+        if (!productDto.getId().equals(id)) {
+            throw new ProductException("Product id must be the same.");
+        }
+        ValidationUtil.validProductData(productDto);
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setAmountLeft(productDto.getQuantity());
+        return ProductDto.minEdited(productRepository.save(product));
+    }
+
+    @Transactional
+    public ProductDto addProduct(String productJson, MultipartFile image) {
+        ProductDto product;
+        try {
+            product = new ObjectMapper().readValue(productJson, ProductDto.class);
+        } catch (JsonProcessingException e) {
+            throw new ProductException("Error parsing product data: " + e.getMessage());
+        }
+
+        ValidationUtil.validProductData(product);
+        ValidationUtil.validRestProduct(product);
+
+        product.setImage(saveImage(image));
+
+        List<Category> categories = categoryRepository.findByNameIn(product.getCategories());
+
+        return ProductDto.minDto(productRepository.save(ProductDto.toEntity(product, categories)));
+    }
+
+    private String saveImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) return null;
+
+        if (!"image/png".equals(image.getContentType())) {
+            throw new RuntimeException("Allowed files: PNG!");
+        }
+
+        try {
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            Path uploadDir = Paths.get("external-images");
+
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            Path filePath = uploadDir.resolve(fileName);
+            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            return "external-images/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save file: " + e.getMessage());
+        }
+    }
 }
