@@ -53,4 +53,8 @@ export class AdminService {
   updateProduct(productId: string, editedProduct: ProductInfo): Observable<{product: ProductInfo}> {
     return this.httpClient.patch<{product: ProductInfo}>(`${this.apiUrl}/products/${productId}`, editedProduct);
   }
+
+  addProduct(formData: FormData) {
+    return this.httpClient.post(`${this.apiUrl}/products`, formData);
+  }
 }

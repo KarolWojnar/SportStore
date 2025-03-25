@@ -3,7 +3,7 @@ package org.shop.sportwebstore.controller;
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.ProductDto;
-import org.shop.sportwebstore.service.store.StoreService;
+import org.shop.sportwebstore.service.store.ProductService;
 import org.shop.sportwebstore.service.user.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class AdminController {
 
     private final UserService userService;
-    private final StoreService storeService;
+    private final ProductService productService;
 
     @GetMapping("/users")
     public ResponseEntity<?> getUser(@RequestParam(value = "page", defaultValue = "0") int page,
@@ -67,7 +67,7 @@ public class AdminController {
                                      @RequestParam(value = "search", defaultValue = "") String search,
                                      @RequestParam(value = "categories", defaultValue = "", required = false) List<String> categories){
         try {
-            return ResponseEntity.ok(storeService.getProducts(page, size, sort, direction, search, categories));
+            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories));
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -78,7 +78,7 @@ public class AdminController {
     @PatchMapping("/products/{id}")
     public ResponseEntity<?> changeProductData(@PathVariable String id, @RequestBody ProductDto product) {
         try {
-            return ResponseEntity.ok(Map.of("product", storeService.changeProductData(id, product)));
+            return ResponseEntity.ok(Map.of("product", productService.changeProductData(id, product)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error changing product data: " + e.getMessage()));
         }
@@ -88,7 +88,7 @@ public class AdminController {
     public ResponseEntity<?> addProduct(@RequestPart("product") String productJson,
                                         @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            return ResponseEntity.ok(Map.of("product", storeService.addProduct(productJson, file)));
+            return ResponseEntity.ok(Map.of("product", productService.addProduct(productJson, file)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error adding product: " + e.getMessage()));
         }

@@ -44,3 +44,11 @@ export interface ProductsResponse {
   products: ProductDetails[];
 }
 
+export interface NewProduct {
+  name: string;
+  price: number;
+  description: string;
+  quantity: number;
+  categories: string[];
+}
+

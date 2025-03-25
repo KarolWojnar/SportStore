@@ -12,6 +12,7 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
+import org.shop.sportwebstore.exception.ProductException;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.DeliveryTime;
 import org.shop.sportwebstore.model.OrderStatus;
@@ -57,7 +58,7 @@ public class PaymentService {
         Customer customer = userService.findOrCreateCustomer(orderDto);
         Cart cart = cartService.getCart(customer.getUserId());
         double shippingPrice = orderDto.getDeliveryTime().equals(DeliveryTime.STANDARD) ? 0.0 : 10.0;
-        double totalPrice = ((calculateTotalPrice(cart) + shippingPrice)) * 100;
+        double totalPrice = ((cartService.calculateTotalPrice(cart) + shippingPrice)) * 100;
         String orderId = orderService.createOrder(cart, customer, totalPrice, orderDto.getPaymentMethod());
         String url = preparePaymentTemplate(orderDto, (long) (totalPrice), orderId);
         cartService.deleteCart(customer.getUserId());
@@ -106,6 +107,7 @@ public class PaymentService {
         }
     }
 
+    @Transactional(rollbackFor = ProductException.class)
     public OrderDto getSummary() {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new RuntimeException("User not found."));
@@ -123,7 +125,7 @@ public class PaymentService {
 
         cartService.checkCartProducts(cart, true);
 
-        double totalPrice = calculateTotalPrice(cart);
+        double totalPrice = cartService.calculateTotalPrice(cart);
         return OrderDto.builder()
                 .firstName(name)
                 .lastName(lastName)
@@ -131,15 +133,6 @@ public class PaymentService {
                 .totalPrice(totalPrice)
                 .deliveryTime(DeliveryTime.STANDARD)
                 .build();
-    }
-
-    public double calculateTotalPrice(Cart cart) {
-        List<Product> products = productRepository.findAllById(cart.getProducts().keySet());
-        double totalPrice = 0;
-        for (Product product : products) {
-            totalPrice += product.getPrice() * cart.getProducts().get(product.getId());
-        }
-        return totalPrice;
     }
 
     public void cancelPayment() {

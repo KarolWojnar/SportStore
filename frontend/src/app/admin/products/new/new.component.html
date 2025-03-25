@@ -1,0 +1,100 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><a routerLink="/admin" class="text-reset">Admin</a> →
+      <a routerLink="/admin/products" class="text-reset"> Products</a>
+      → New Product</h4>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="p-4">
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label for="name" class="form-label">Product Name*</label>
+          <input type="text" class="form-control" id="name" formControlName="name">
+          <div *ngIf="name?.invalid && (name?.dirty)" class="text-danger">
+            <small *ngIf="name?.errors?.['required']">Name is required</small>
+            <small *ngIf="name?.errors?.['minlength']">Name must be at least 3 characters</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div class="mb-3">
+          <label for="description" class="form-label">Description*</label>
+          <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>
+          <div *ngIf="description?.invalid && (description?.dirty)" class="text-danger">
+            <small *ngIf="description?.errors?.['required']">Description is required</small>
+            <small *ngIf="description?.errors?.['minlength']">Description must be at least 10 characters</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label for="price" class="form-label">Price*</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="price" formControlName="price" step="0.01" min="0.01">
+          </div>
+          <div *ngIf="price?.invalid && (price?.dirty)" class="text-danger">
+            <small *ngIf="price?.errors?.['required']">Price is required</small>
+            <small *ngIf="price?.errors?.['min']">Price must be at least $0.01</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label for="quantity" class="form-label">Stock Quantity*</label>
+          <input type="number" class="form-control" id="quantity" formControlName="quantity" min="0">
+          <div *ngIf="quantity?.invalid && (quantity?.dirty)" class="text-danger">
+            <small *ngIf="quantity?.errors?.['required']">Quantity is required</small>
+            <small *ngIf="quantity?.errors?.['min']">Quantity cannot be negative</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="mb-3">
+          <label for="image" class="form-label">Product Image (PNG only)</label>
+          <input type="file" class="form-control" id="image" accept="image/png" (change)="onFileSelected($event)">
+          <small class="text-danger text-decoration-underline">Only PNG images are accepted</small>
+          <div *ngIf="selectedFile" class="mt-2">
+            <small>Selected: {{ selectedFile.name }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Categories</label>
+      <div class="d-flex flex-wrap gap-2">
+        <div *ngFor="let category of categories" class="form-check">
+          <input class="form-check-input" type="checkbox" [value]="category" [id]="'category-' + category"
+                 (change)="updateCategories(category, $event)">
+          <label class="form-check-label" [for]="'category-' + category">
+            {{ category }}
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-outline-secondary" routerLink="/admin/products">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid || isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        {{ isLoading ? 'Creating...' : 'Create Product' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -22,6 +22,7 @@ import { DetailsComponent as  ProfileDetailsComponent } from './profile/details/
 import { EditComponent } from './profile/edit/edit.component';
 import { UsersComponent } from './admin/users/users.component';
 import { ProductsComponent } from './admin/products/products.component';
+import { NewComponent } from './admin/products/new/new.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -52,6 +53,7 @@ export const routes: Routes = [
     children: [
       { path: 'users', component: UsersComponent },
       { path: 'products', component: ProductsComponent },
+      { path: 'products/new', component: NewComponent },
       { path: 'orders', component: AdminOrdersComponent }
     ]
   }
