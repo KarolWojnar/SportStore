@@ -2,6 +2,15 @@
   <div class="d-flex justify-content-between">
     <h4 class="mb-4"><a routerLink="/admin" class="text-reset">Admin</a> → Products</h4>
     <div class="d-flex justify-content-end align-items-center gap-2">
+      <button class="btn btn-outline-primary btn-sm rounded-2"
+              (click)="toggleFormCategory()">
+        Add Category
+      </button>
+      <div class="d-flex justify-content-between gap-1"
+           *ngIf="showForm">
+        <input type="text" class="rounded" [(ngModel)]="newCategory">
+        <button (click)="saveCategory()" class="btn btn-outline-success btn-sm">Save</button>
+      </div>
       <button class="btn btn-primary btn-sm rounded-2" routerLink="/admin/products/new" id="top">
         Add Product
       </button>

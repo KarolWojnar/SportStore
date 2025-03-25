@@ -93,4 +93,13 @@ public class AdminController {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error adding product: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/categories")
+    public ResponseEntity<?> addCategory(@RequestBody String category) {
+        try {
+            return ResponseEntity.ok(Map.of("category", productService.addCategory(category)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error adding category: " + e.getMessage()));
+        }
+    }
 }

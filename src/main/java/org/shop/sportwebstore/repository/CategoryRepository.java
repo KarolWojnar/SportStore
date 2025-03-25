@@ -10,4 +10,6 @@ import java.util.List;
 public interface CategoryRepository extends MongoRepository<Category, String> {
     @Query("{ name : { $in: ?0 } }")
     List<Category> findByNameIn(List<String> names);
+
+    boolean existsByName(String name);
 }

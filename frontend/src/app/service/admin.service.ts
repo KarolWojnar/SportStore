@@ -57,4 +57,8 @@ export class AdminService {
   addProduct(formData: FormData) {
     return this.httpClient.post(`${this.apiUrl}/products`, formData);
   }
+
+  addCategory(category: string): Observable<{category: any}> {
+    return this.httpClient.post<{category: any}>(`${this.apiUrl}/categories`, category);
+  }
 }

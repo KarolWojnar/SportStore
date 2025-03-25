@@ -157,4 +157,11 @@ public class ProductService {
         orderService.setOrderProductAsRated(rateProductDto.getOrderId(), rateProductDto.getProductId());
         productRepository.save(product);
     }
+
+    public Category addCategory(String category) {
+        if (categoryRepository.existsByName(category)) {
+            throw new ProductException("Category already exists.");
+        }
+        return categoryRepository.save(new Category(category));
+    }
 }
