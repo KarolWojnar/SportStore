@@ -36,4 +36,8 @@ export class AdminComponent {
   toggleSidebar() {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
+
+  isAdminHome(): boolean {
+    return window.location.pathname === '/admin';
+  }
 }

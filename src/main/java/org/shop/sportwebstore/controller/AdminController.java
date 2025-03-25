@@ -3,6 +3,7 @@ package org.shop.sportwebstore.controller;
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.ProductDto;
+import org.shop.sportwebstore.service.store.OrderService;
 import org.shop.sportwebstore.service.store.ProductService;
 import org.shop.sportwebstore.service.user.UserService;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ public class AdminController {
 
     private final UserService userService;
     private final ProductService productService;
+    private final OrderService orderService;
 
     @GetMapping("/users")
     public ResponseEntity<?> getUser(@RequestParam(value = "page", defaultValue = "0") int page,
@@ -100,6 +102,27 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("category", productService.addCategory(category)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error adding category: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<?> getOrders(@RequestParam(value = "page", defaultValue = "0") int page,
+                                       @RequestParam(value = "size", defaultValue = "10") int size,
+                                       @RequestParam(value = "status", defaultValue = "") String status){
+        try {
+            return ResponseEntity.ok(orderService.getOrders(page, size, status));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error fetching orders: " + e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/orders/{id}")
+    public ResponseEntity<?> changeOrderStatus(@PathVariable String id){
+        try {
+            orderService.cancelOrder(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error changing order status: " + e.getMessage()));
         }
     }
 }

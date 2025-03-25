@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserDetails } from '../model/user-dto';
 import { ProductInfo, ProductsResponse } from '../model/product';
+import { OrderBaseInfo } from '../model/order';
 
 @Injectable({
   providedIn: 'root'
@@ -60,5 +61,18 @@ export class AdminService {
 
   addCategory(category: string): Observable<{category: any}> {
     return this.httpClient.post<{category: any}>(`${this.apiUrl}/categories`, category);
+  }
+
+  getOrders(page: number = 0, selectedStatus: string | null): Observable<OrderBaseInfo[]>{
+    let params = new HttpParams().set('page', page);
+
+    if (selectedStatus) {
+      params = params.set('status', selectedStatus);
+    }
+    return this.httpClient.get<OrderBaseInfo[]>(`${this.apiUrl}/orders`, { params });
+  }
+
+  cancelOrder(orderId: string) {
+    return this.httpClient.patch(`${this.apiUrl}/orders/${orderId}`, null);
   }
 }

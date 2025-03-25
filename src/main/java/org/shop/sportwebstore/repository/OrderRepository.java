@@ -2,6 +2,8 @@ package org.shop.sportwebstore.repository;
 
 import org.shop.sportwebstore.model.OrderStatus;
 import org.shop.sportwebstore.model.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Date;
@@ -15,4 +17,6 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findAllByUserId(String userId);
     Optional<Order> findByIdAndUserId(String id, String id1);
     List<Order> findAllByStatusAndOrderDateBefore(OrderStatus status, Date orderDate);
+
+    Page<Order> findAllByStatus(OrderStatus orderStatus, Pageable pageable);
 }

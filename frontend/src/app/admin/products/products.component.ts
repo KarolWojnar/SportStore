@@ -32,7 +32,7 @@ import { faArrowRotateRight, faArrowUp } from '@fortawesome/free-solid-svg-icons
 export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
   products: ProductDetails[] = [];
   isLoading: boolean = true;
-  errorMessage: string = '';
+  errorMessage: string | null = null;
   page: number = 0;
   hasMoreProducts: boolean = true;
   isLoadingNextData: boolean = false;
@@ -240,9 +240,11 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (response) => {
           this.categories.push(response.category.name);
           this.newCategory = null;
+          this.errorMessage = null;
+          this.showForm = false;
         },
         error: (error) => {
-          console.error('Error adding category:', error);
+          this.errorMessage = error.error.message;
         }
       });
     }
