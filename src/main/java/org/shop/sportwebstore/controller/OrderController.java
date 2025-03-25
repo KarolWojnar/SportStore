@@ -35,4 +35,24 @@ public class OrderController {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    @PatchMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelOrder(@PathVariable String id) {
+        try {
+            orderService.cancelOrder(id, false);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/refund/{id}")
+    public ResponseEntity<?> refundOrder(@PathVariable String id) {
+        try {
+            orderService.refundOrder(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
 }

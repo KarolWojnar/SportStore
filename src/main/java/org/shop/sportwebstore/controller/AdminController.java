@@ -119,7 +119,7 @@ public class AdminController {
     @PatchMapping("/orders/{id}")
     public ResponseEntity<?> changeOrderStatus(@PathVariable String id){
         try {
-            orderService.cancelOrder(id);
+            orderService.cancelOrder(id, true);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error changing order status: " + e.getMessage()));

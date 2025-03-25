@@ -35,7 +35,6 @@ export class OrderInfoComponent implements OnInit {
   rating = 0;
   protected readonly faStar = faStar;
   productRate = 'XX';
-  successRatingMessage: string | null = null;
 
   constructor(private storeService: StoreService,
               private route: ActivatedRoute) {
@@ -117,7 +116,14 @@ export class OrderInfoComponent implements OnInit {
   }
 
   cancelOrder() {
-    //todo: handle cancel order
+    this.storeService.cancelOrder(this.order.id).subscribe({
+      next: () => {
+        this.order.status = 'ANNULLED';
+      },
+      error: (err) => {
+        console.error('Error updating customer:', err);
+      }
+    });
   }
 
   private calculateIfCanRefund() {
@@ -125,7 +131,6 @@ export class OrderInfoComponent implements OnInit {
     const currentDate = new Date();
     const timeDifference = currentDate.getTime() - deliveryDate.getTime();
     const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 14));
-    console.log(daysDifference);
     this.canRefund = daysDifference <= 14;
   }
 
@@ -147,6 +152,7 @@ export class OrderInfoComponent implements OnInit {
           this.productRate = 'XX';
         },
         error: (err) => {
+          this.errorMessage = err.error.message;
           console.error('Error updating customer:', err);
         }
       });
@@ -156,4 +162,15 @@ export class OrderInfoComponent implements OnInit {
     }
   }
 
+  refundOrder() {
+    this.storeService.refundOrder(this.order.id).subscribe({
+      next: () => {
+        this.order.status = 'REFUNDED';
+      },
+      error: (err) => {
+        this.errorMessage = err.error.message;
+        console.error('Error updating customer:', err);
+      }
+    });
+  }
 }
