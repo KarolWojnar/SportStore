@@ -53,7 +53,7 @@ public class ProductService {
         return ProductDto.minDto(productRepository.save(ProductDto.toEntity(product, categories)));
     }
 
-    private String saveImage(MultipartFile image) {
+    protected String saveImage(MultipartFile image) {
         if (image == null || image.isEmpty()) return null;
 
         if (!"image/png".equals(image.getContentType())) {
