@@ -168,7 +168,7 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    private Order findOrderByUserAndId(String id) {
+    public Order findOrderByUserAndId(String id) {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new UserException("User not found."));
         return orderRepository.findByIdAndUserId(id, user.getId()).orElseThrow(() -> new PaymentException("Order not found."));
