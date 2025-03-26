@@ -249,4 +249,18 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
   }
+
+  changeAvailability(productId: string, available: boolean): void {
+    this.adminService.changeAvailability(productId, available).subscribe({
+      next: () => {
+        const index = this.products.findIndex(product => product.id === productId);
+        if (index!== -1) {
+          this.products[index].available = available;
+        }
+      },
+      error: (error) => {
+        console.error('Error updating product availability:', error);
+      }
+    });
+  }
 }

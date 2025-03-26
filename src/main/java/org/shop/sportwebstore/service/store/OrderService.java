@@ -45,8 +45,8 @@ public class OrderService {
                 .map(entry -> new ProductInOrder(
                         entry.getKey(),
                         entry.getValue(),
-                        productRepository.findById(entry.getKey()).isPresent() ?
-                                productRepository.findById(entry.getKey()).get().getPrice() : 0.0
+                        productRepository.findByIdAndAvailableTrue(entry.getKey()).isPresent() ?
+                                productRepository.findByIdAndAvailableTrue(entry.getKey()).get().getPrice() : 0.0
                 ))
                 .collect(Collectors.toList());
         Order order = orderRepository.save(new Order(

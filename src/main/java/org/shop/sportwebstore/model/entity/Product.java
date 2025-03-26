@@ -21,6 +21,7 @@ public class Product {
     private int amountLeft;
     private String description;
     private String imageUrl;
+    private boolean available = true;
 
     /**
      * integer - amount of user who rated

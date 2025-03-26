@@ -23,6 +23,7 @@ export interface ProductCart {
 export interface ProductDetails {
   id: string;
   name: string;
+  available?: boolean;
   price: number;
   quantity: number;
   rating: number;

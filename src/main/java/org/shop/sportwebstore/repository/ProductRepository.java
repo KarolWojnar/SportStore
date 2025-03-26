@@ -14,17 +14,19 @@ import java.util.Optional;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
 
-    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, 'categories.name': { '$in': ?1 } }")
-    Page<Product> findByNameMatchesRegexIgnoreCaseAndCategoriesIn(String name, List<String> categories, Pageable pageable);
+    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, 'categories.name': { '$in': ?1 }, available: {$in: [true, ?1]} }")
+    Page<Product> findByNameMatchesRegexIgnoreCaseAndCategoriesIn(String name, List<String> categories, boolean available, Pageable pageable);
 
-    @Query("{ 'name': { '$regex': ?0, '$options': 'i' } }")
-    Page<Product> findByNameMatchesRegexIgnoreCase(String name, Pageable pageable);
+    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, available: {$in: [true, ?1]} }")
+    Page<Product> findByNameMatchesRegexIgnoreCase(String name, boolean available, Pageable pageable);
 
 
-    List<Product> findTop9ByOrderByOrdersDesc();
+    List<Product> findTop9ByAvailableTrueOrderByOrdersDesc();
 
-    List<Product> findTop4ByCategoriesInAndIdNot(Collection<List<Category>> categories, String id);
-    Optional<Product> findByIdAndAmountLeftIsGreaterThan(String id, int amountLeft);
+    Optional<Product> findByIdAndAvailableTrue(String id);
+
+    List<Product> findTop4ByCategoriesInAndIdNotAndAvailableTrue(Collection<List<Category>> categories, String id);
+    Optional<Product> findByIdAndAmountLeftIsGreaterThanAndAvailableTrue(String id, int amountLeft);
 
     @Query("{ 'id': { '$eq': ?0 } }")
     @Update("{ $inc: { amountLeft: ?1 } }")

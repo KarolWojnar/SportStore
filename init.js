@@ -249,7 +249,8 @@ for (const template of productTemplates) {
             description: template.description,
             ratings: {[getRandomInt(3, 100)]: (getRandomInt(3, 100) / 20)},
             imageUrl: template.imageUrl + (i + 1) + '.png',
-            categories: productCategories
+            categories: productCategories,
+            available: getRandomInt(0, 3) === 1,
         };
 
         newProducts.push(product);

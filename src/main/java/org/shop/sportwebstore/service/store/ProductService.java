@@ -90,8 +90,8 @@ public class ProductService {
     }
 
     public Map<String, Object> getProducts(int page, int size, String sort, String direction,
-                                           String search, List<String> categories) {
-        Page<Product> products = fetchProducts(page, size, sort, direction, search, categories);
+                                           String search, List<String> categories, boolean isAdmin) {
+        Page<Product> products = fetchProducts(page, size, sort, direction, search, categories, isAdmin);
         Map<String, Object> response = new java.util.HashMap<>(Map.of(
                 "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
                 "totalElements", products.getTotalElements()
@@ -102,15 +102,15 @@ public class ProductService {
         return response;
     }
 
-    private Page<Product> fetchProducts(int page, int size, String sort, String direction, String search, List<String> categories) {
+    private Page<Product> fetchProducts(int page, int size, String sort, String direction, String search, List<String> categories, boolean isAdmin) {
         Sort.Direction direct = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sortObj = Sort.by(direct, sort);
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<Product> products;
         if (categories == null || categories.isEmpty()) {
-            products = productRepository.findByNameMatchesRegexIgnoreCase(".*" + search + ".*", pageable);
+            products = productRepository.findByNameMatchesRegexIgnoreCase(".*" + search + ".*", !isAdmin, pageable);
         } else {
-            products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, pageable);
+            products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, !isAdmin, pageable);
         }
         return products;
     }
@@ -120,14 +120,14 @@ public class ProductService {
     }
 
     public Map<String, Object> getFeaturedProducts() {
-        List<Product> products = productRepository.findTop9ByOrderByOrdersDesc();
+        List<Product> products = productRepository.findTop9ByAvailableTrueOrderByOrdersDesc();
         return Map.of("products", products.stream().map(product -> ProductDto.toDto(product, false)).toList());
     }
 
     public Map<String, Object> getDetails(String id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
+        Product product = productRepository.findByIdAndAvailableTrue(id).orElseThrow(() -> new ProductException("Product not found."));
         Collection<List<Category>> categories = Collections.singleton(product.getCategories());
-        List<Product> relatedProducts = productRepository.findTop4ByCategoriesInAndIdNot(categories, id);
+        List<Product> relatedProducts = productRepository.findTop4ByCategoriesInAndIdNotAndAvailableTrue(categories, id);
         return Map.of(
                 "product", ProductDto.toDto(product, true),
                 "relatedProducts", relatedProducts.stream().map(ProductDto::minDto).toList());
@@ -161,5 +161,11 @@ public class ProductService {
             throw new ProductException("Category already exists.");
         }
         return categoryRepository.save(new Category(category));
+    }
+
+    public ProductDto changeProductAvailability(String id, boolean available) {
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
+        product.setAvailable(available);
+        return ProductDto.minEdited(productRepository.save(product));
     }
 }

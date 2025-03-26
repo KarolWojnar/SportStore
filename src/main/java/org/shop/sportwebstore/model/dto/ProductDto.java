@@ -20,6 +20,7 @@ public class ProductDto {
     private int quantity;
     private double rating;
     private String image;
+    private boolean available;
     private int soldItems;
     private List<String> categories;
 
@@ -28,8 +29,10 @@ public class ProductDto {
         productDto.setName(product.getName());
         productDto.setPrice(product.getPrice());
         productDto.setImage(product.getImageUrl());
+        productDto.setAvailable(product.isAvailable());
         productDto.setRating(product.getRatings().values().iterator().next());
         productDto.setQuantity(product.getAmountLeft());
+        productDto.setAvailable(product.isAvailable());
         productDto.setId(product.getId());
         productDto.setCategories(product.getCategories().stream().map(Category::getName).collect(toList()));
         if (withDetails) {

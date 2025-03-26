@@ -62,14 +62,14 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<?> getUser(@RequestParam(value = "page", defaultValue = "0") int page,
+    public ResponseEntity<?> getProducts(@RequestParam(value = "page", defaultValue = "0") int page,
                                      @RequestParam(value = "size", defaultValue = "10") int size,
                                      @RequestParam(value = "sort", defaultValue = "id") String sort,
                                      @RequestParam(value = "direction", defaultValue = "asc") String direction,
                                      @RequestParam(value = "search", defaultValue = "") String search,
                                      @RequestParam(value = "categories", defaultValue = "", required = false) List<String> categories){
         try {
-            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories));
+            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories, true));
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -83,6 +83,15 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("product", productService.changeProductData(id, product)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error changing product data: " + e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/products/{id}/available")
+    public ResponseEntity<?> changeProductAvailability(@PathVariable String id, @RequestBody boolean available) {
+        try {
+            return ResponseEntity.ok(Map.of("product", productService.changeProductAvailability(id, available)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Error changing product availability: " + e.getMessage()));
         }
     }
 

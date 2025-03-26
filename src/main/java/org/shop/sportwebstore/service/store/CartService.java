@@ -56,7 +56,7 @@ public class CartService {
     }
 
     public void addToCart(String productId) {
-        Product product = productRepository.findByIdAndAmountLeftIsGreaterThan(productId, 0).orElseThrow(() -> new ProductException("Product not found."));
+        Product product = productRepository.findByIdAndAmountLeftIsGreaterThanAndAvailableTrue(productId, 0).orElseThrow(() -> new ProductException("Product not found."));
         String authUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String userId = userRepository.findByEmail(authUser).orElseThrow().getId();
         Cart cart = getCart(userId);

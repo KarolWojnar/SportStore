@@ -93,6 +93,14 @@
           </p>
         </div>
         <div class="d-flex justify-content-end align-items-center gap-2">
+          <button class="btn btn-outline-danger btn-sm rounded-2"
+                  *ngIf="product.available" (click)="changeAvailability(product.id, false)">
+            Set as unavailable
+          </button>
+          <button class="btn btn-outline-success btn-sm rounded-2"
+                  *ngIf="!product.available" (click)="changeAvailability(product.id, true)">
+            Set as available
+          </button>
           <button class="btn btn-outline-primary btn-sm rounded-2" (click)="editProduct(product)">
             Edit
           </button>

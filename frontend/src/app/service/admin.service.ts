@@ -55,6 +55,10 @@ export class AdminService {
     return this.httpClient.patch<{product: ProductInfo}>(`${this.apiUrl}/products/${productId}`, editedProduct);
   }
 
+  changeAvailability(productId: string, newAvailability: boolean) {
+    return this.httpClient.patch(`${this.apiUrl}/products/${productId}/available`, newAvailability);
+  }
+
   addProduct(formData: FormData) {
     return this.httpClient.post(`${this.apiUrl}/products`, formData);
   }

@@ -30,7 +30,7 @@ public class StoreController {
                                          @RequestParam(value = "search", defaultValue = "") String search,
                                          @RequestParam(value = "categories", defaultValue = "", required = false) List<String> categories) {
         try {
-            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories));
+            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories, false));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
