@@ -23,8 +23,6 @@ public class JwtUtil {
     private final RedisTemplate<String, String> redisBlacklistTemplate;
     @Value("${jwt.secret}")
     private String secret;
-    @Value("${jwt.exp}")
-    private int expirationTime;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -80,11 +78,11 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public void addToBlackList(String token) {
-        redisBlacklistTemplate.opsForValue().set("black_list:" + token, "black_list", expirationTime, TimeUnit.MILLISECONDS);
+    public void addToBlackList(String token, int exp, String tokenType) {
+        redisBlacklistTemplate.opsForValue().set("black_list:" + token, tokenType, exp, TimeUnit.MILLISECONDS);
     }
 
-    public boolean isBlackListed(String token) {
-        return redisBlacklistTemplate.hasKey("black_list:" + token);
+    public boolean isBlackListed(String token, String tokenType) {
+        return redisBlacklistTemplate.hasKey("black_list:" + token) && tokenType.equals(redisBlacklistTemplate.opsForValue().get("black_list:" + token));
     }
 }

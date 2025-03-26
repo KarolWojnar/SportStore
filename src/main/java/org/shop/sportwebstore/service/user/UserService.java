@@ -115,11 +115,12 @@ public class UserService {
     public void logout(HttpServletResponse response, HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
 
-        jwtUtil.addToBlackList(extractAccessToken(request));
+        jwtUtil.addToBlackList(extractAccessToken(request), exp, "access");
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("Refresh-token".equals(cookie.getName())) {
+                    jwtUtil.addToBlackList(cookie.getValue(), refreshExp, "refresh");
                     cookie.setValue("");
                     cookie.setPath("/");
                     cookie.setMaxAge(0);

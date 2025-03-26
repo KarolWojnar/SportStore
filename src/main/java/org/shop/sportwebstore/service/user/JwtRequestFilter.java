@@ -43,7 +43,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             accessToken = authHeader.substring(7);
-            if (jwtUtil.isBlackListed(accessToken)) {
+            if (jwtUtil.isBlackListed(accessToken, "access")) {
                 log.info("Access token is blacklisted.");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Access token is blacklisted.");
@@ -71,6 +71,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 for (Cookie cookie : cookies) {
                     if ("Refresh-token".equals(cookie.getName())) {
                         String refreshToken = cookie.getValue();
+                        if (jwtUtil.isBlackListed(refreshToken, "refresh")) {
+                            log.info("Refresh token is blacklisted.");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("Refresh token is blacklisted.");
+                            return;
+                        }
                         try {
                             username = jwtUtil.getSubject(refreshToken);
                             UserDetails user = userDetailsService.loadUserByUsername(username);
