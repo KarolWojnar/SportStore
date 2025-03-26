@@ -104,11 +104,11 @@ class ProductServiceTest {
 
         Page<Product> productPage = new PageImpl<>(List.of(product), pageable, 1);
 
-        when(productRepository.findByNameMatchesRegexIgnoreCase(anyString(), anyBoolean(), any(Pageable.class)))
+        when(productRepository.findByNameMatchesRegexIgnoreCase(anyString(), anyBoolean(), anyInt(), anyInt(), any(Pageable.class)))
                 .thenReturn(productPage);
         when(categoryRepository.findAll()).thenReturn(List.of(new Category(categoryName)));
 
-        Map<String, Object> result = productService.getProducts(0, 10, "name", "asc", "test", null, false);
+        Map<String, Object> result = productService.getProducts(0, 10, "name", "asc", "test", 0, 9999, null, false);
 
         assertNotNull(result);
         assertEquals(1, ((List<?>) result.get("products")).size());

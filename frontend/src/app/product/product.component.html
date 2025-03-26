@@ -1,5 +1,5 @@
 <div class="container mt-3">
-  <div class="mb-3 row align-items-center">
+  <div class="row align-items-center">
     <div class="col-md-8 d-flex gap-2">
       <button class="btn btn-outline-primary flex-grow-1" (click)="sortBy('name')">
         <fa-icon *ngIf="sort === 'name'" [icon]="direction === 'asc' ? faSortUp : faSortDown"></fa-icon>
@@ -28,35 +28,41 @@
     </div>
   </div>
 
-  <div class="mb-3">
-    <div class="d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">
-        <fa-icon [icon]="faFilter"></fa-icon> Filter by Categories
-      </h5>
-      <button class="btn btn-link" (click)="toggleCategories()">
-        <fa-icon [icon]="showCategories ? faChevronUp : faChevronDown"></fa-icon>
+  <div class="row my-3">
+    <div class="col-md-9">
+      <button *ngFor="let category of allCategories"
+              [ngClass]="['btn btn-sm rounded-2', selectedCategories.includes(category) ? 'btn-info' : 'btn-outline-secondary']"
+              style="margin: 2px"
+              (click)="filterByCategory(category)">
+        {{ category }}
+      </button>
+      <button *ngIf="selectedCategories.length > 0"
+              class="btn btn-outline-danger btn-sm rounded-2"
+              style="margin: 2px"
+              (click)="clearCategoryFilters()">
+        Clear Filters
       </button>
     </div>
-    <div *ngIf="showCategories" class="mt-2">
-      <button class="btn btn-outline-secondary btn-sm mb-2" (click)="clearFilters()">
-        <fa-icon [icon]="faTimes"></fa-icon> Clear Filters
-      </button>
-      <div class="row">
-        <div *ngFor="let category of allCategories; let i = index" class="col-md-4">
-          <div class="form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              [id]="'category-' + category"
-              [value]="category"
-              (change)="onCategoryChange(category, $event)"
-              [checked]="selectedCategories.includes(category)"
-            />
-            <label class="form-check-label" [for]="'category-' + category">
-              {{ category }}
-            </label>
-          </div>
-        </div>
+    <div class="col-md-3">
+      <div class="d-flex align-items-center mb-2">
+        <input type="range"
+               class="form-range"
+               min="0"
+               [max]="maxPriceFromData"
+               [(ngModel)]="minPrice"
+               (change)="onPriceChange()"
+               id="minPriceSlider">
+        <span class="ms-2">${{minPrice}}</span>
+      </div>
+      <div class="d-flex align-items-center mb-2">
+        <input type="range"
+               class="form-range"
+               min="0"
+               [max]="maxPriceFromData"
+               [(ngModel)]="maxPrice"
+               (change)="onPriceChange()"
+               id="maxPriceSlider">
+        <span class="ms-2">${{maxPrice}}</span>
       </div>
     </div>
   </div>

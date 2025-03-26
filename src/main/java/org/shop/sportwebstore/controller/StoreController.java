@@ -28,13 +28,25 @@ public class StoreController {
                                          @RequestParam(value = "sort", defaultValue = "id") String sort,
                                          @RequestParam(value = "direction", defaultValue = "asc") String direction,
                                          @RequestParam(value = "search", defaultValue = "") String search,
+                                         @RequestParam(value = "minPrice", defaultValue = "0") int minPrice,
+                                         @RequestParam(value = "maxPrice", defaultValue = "9999") int maxPrice,
                                          @RequestParam(value = "categories", defaultValue = "", required = false) List<String> categories) {
         try {
-            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories, false));
+            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, minPrice, maxPrice, categories, false));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    @GetMapping("/max-price")
+    public ResponseEntity<?> getMaxPrice() {
+        try {
+            return ResponseEntity.ok(Map.of("maxPrice", productService.getMaxPrice()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     @GetMapping("/categories")
     public ResponseEntity<?> getCategories() {
         return ResponseEntity.ok(Map.of("categories", productService.getCategories()));

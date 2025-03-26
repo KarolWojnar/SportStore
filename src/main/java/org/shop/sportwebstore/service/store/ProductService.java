@@ -90,8 +90,8 @@ public class ProductService {
     }
 
     public Map<String, Object> getProducts(int page, int size, String sort, String direction,
-                                           String search, List<String> categories, boolean isAdmin) {
-        Page<Product> products = fetchProducts(page, size, sort, direction, search, categories, isAdmin);
+                                           String search, int minPrice, int maxPrice, List<String> categories, boolean isAdmin) {
+        Page<Product> products = fetchProducts(page, size, sort, direction, search, minPrice, maxPrice, categories, isAdmin);
         Map<String, Object> response = new java.util.HashMap<>(Map.of(
                 "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
                 "totalElements", products.getTotalElements()
@@ -102,15 +102,15 @@ public class ProductService {
         return response;
     }
 
-    private Page<Product> fetchProducts(int page, int size, String sort, String direction, String search, List<String> categories, boolean isAdmin) {
+    private Page<Product> fetchProducts(int page, int size, String sort, String direction, String search, int minPrice, int maxPrice, List<String> categories, boolean isAdmin) {
         Sort.Direction direct = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sortObj = Sort.by(direct, sort);
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<Product> products;
         if (categories == null || categories.isEmpty()) {
-            products = productRepository.findByNameMatchesRegexIgnoreCase(".*" + search + ".*", !isAdmin, pageable);
+            products = productRepository.findByNameMatchesRegexIgnoreCase(".*" + search + ".*", !isAdmin, minPrice, maxPrice, pageable);
         } else {
-            products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, !isAdmin, pageable);
+            products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, !isAdmin, minPrice, maxPrice, pageable);
         }
         return products;
     }
@@ -167,5 +167,9 @@ public class ProductService {
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
         product.setAvailable(available);
         return ProductDto.minEdited(productRepository.save(product));
+    }
+
+    public double getMaxPrice() {
+        return productRepository.findTopByAvailableTrueAndAmountLeftGreaterThanOrderByPriceDesc(0).getPrice();
     }
 }

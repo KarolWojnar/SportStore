@@ -19,10 +19,13 @@ export class StoreService {
 
   getProducts(page: number = 0, size: number = 10,
               sort: string = 'id', direction: string = 'asc',
-              search: string = '', categories: string[] = [])
+              search: string = '', minPrice?: number,
+              maxPrice?: number, categories: string[] = [])
     : Observable<{ products: Product[]; totalElements: number }> {
 
-    const params = { page, size, sort, direction, search, categories };
+    const params: any = { page, size, sort, direction, search, categories };
+    if (minPrice !== undefined) params.minPrice = minPrice;
+    if (maxPrice !== undefined) params.maxPrice = maxPrice;
     return this.httpClient.get<{ products: Product[]; totalElements: number }>(`${this.apiUrl}`, {params});
   }
 
@@ -145,5 +148,9 @@ export class StoreService {
 
   refundOrder(orderId: string) {
     return this.httpClient.patch(`${this.apiUrlOrder}/refund/${orderId}`, null);
+  }
+
+  getMaxPrice() {
+    return this.httpClient.get<{maxPrice: number}>(`${this.apiUrl}/max-price`);
   }
 }

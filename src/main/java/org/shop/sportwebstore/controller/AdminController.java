@@ -67,9 +67,11 @@ public class AdminController {
                                      @RequestParam(value = "sort", defaultValue = "id") String sort,
                                      @RequestParam(value = "direction", defaultValue = "asc") String direction,
                                      @RequestParam(value = "search", defaultValue = "") String search,
+                                     @RequestParam(value = "minPrice", defaultValue = "0") int minPrice,
+                                     @RequestParam(value = "maxPrice", defaultValue = "9999") int maxPrice,
                                      @RequestParam(value = "categories", defaultValue = "", required = false) List<String> categories){
         try {
-            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, categories, true));
+            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, minPrice, maxPrice, categories, true));
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {

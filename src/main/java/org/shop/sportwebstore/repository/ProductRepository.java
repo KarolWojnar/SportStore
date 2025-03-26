@@ -14,12 +14,13 @@ import java.util.Optional;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
 
-    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, 'categories.name': { '$in': ?1 }, available: {$in: [true, ?1]} }")
-    Page<Product> findByNameMatchesRegexIgnoreCaseAndCategoriesIn(String name, List<String> categories, boolean available, Pageable pageable);
+    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, 'categories.name': { '$in': ?1 }, available: {$in: [true, ?1]}, price: {$gte: ?2, $lte: ?3} }")
+    Page<Product> findByNameMatchesRegexIgnoreCaseAndCategoriesIn(String name, List<String> categories, boolean available, int minPrice, int maxPrice, Pageable pageable);
 
-    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, available: {$in: [true, ?1]} }")
-    Page<Product> findByNameMatchesRegexIgnoreCase(String name, boolean available, Pageable pageable);
+    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, available: {$in: [true, ?1]}, price: {$gte: ?2, $lte: ?3} }")
+    Page<Product> findByNameMatchesRegexIgnoreCase(String name, boolean available, int minPrice, int maxPrice, Pageable pageable);
 
+    Product findTopByAvailableTrueAndAmountLeftGreaterThanOrderByPriceDesc(int amount);
 
     List<Product> findTop9ByAvailableTrueOrderByOrdersDesc();
 
