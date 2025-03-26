@@ -115,12 +115,14 @@ public class UserService {
     public void logout(HttpServletResponse response, HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
 
-        jwtUtil.addToBlackList(extractAccessToken(request), exp, "access");
+        long expirationTime = jwtUtil.extractExpiration(extractAccessToken(request)).getTime() - System.currentTimeMillis();
+        jwtUtil.addToBlackList(extractAccessToken(request), expirationTime, "access");
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("Refresh-token".equals(cookie.getName())) {
-                    jwtUtil.addToBlackList(cookie.getValue(), refreshExp, "refresh");
+                    long expirationRefreshTime = jwtUtil.extractExpiration(cookie.getValue()).getTime() - System.currentTimeMillis();
+                    jwtUtil.addToBlackList(cookie.getValue(), expirationRefreshTime, "refresh");
                     cookie.setValue("");
                     cookie.setPath("/");
                     cookie.setMaxAge(0);

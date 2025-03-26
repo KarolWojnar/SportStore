@@ -78,7 +78,7 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public void addToBlackList(String token, int exp, String tokenType) {
+    public void addToBlackList(String token, long exp, String tokenType) {
         redisBlacklistTemplate.opsForValue().set("black_list:" + token, tokenType, exp, TimeUnit.MILLISECONDS);
     }
 
