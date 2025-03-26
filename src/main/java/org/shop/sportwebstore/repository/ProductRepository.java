@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
 
-    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, 'categories.name': { '$in': ?1 }, available: {$in: [true, ?1]}, price: {$gte: ?2, $lte: ?3} }")
+    @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, 'categories.name': { '$in': ?1 }, available: {$in: [true, ?2]}, price: {$gte: ?3, $lte: ?4} }")
     Page<Product> findByNameMatchesRegexIgnoreCaseAndCategoriesIn(String name, List<String> categories, boolean available, int minPrice, int maxPrice, Pageable pageable);
 
     @Query("{ 'name': { '$regex': ?0, '$options': 'i' }, available: {$in: [true, ?1]}, price: {$gte: ?2, $lte: ?3} }")

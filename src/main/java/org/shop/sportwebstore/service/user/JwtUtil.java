@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.shop.sportwebstore.service.ConstantStrings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
@@ -23,6 +23,8 @@ public class JwtUtil {
     private final RedisTemplate<String, String> redisBlacklistTemplate;
     @Value("${jwt.secret}")
     private String secret;
+    @Value("${jwt.exp}")
+    private int expirationTime;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -79,7 +81,7 @@ public class JwtUtil {
     }
 
     public void addToBlackList(String token) {
-        redisBlacklistTemplate.opsForValue().set("black_list:" + token, "black_list", ConstantStrings.TOKEN_ACCESS_EXPIRATION);
+        redisBlacklistTemplate.opsForValue().set("black_list:" + token, "black_list", expirationTime, TimeUnit.MILLISECONDS);
     }
 
     public boolean isBlackListed(String token) {
