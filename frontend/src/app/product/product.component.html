@@ -1,20 +1,27 @@
 <div class="container mt-3">
-  <div class="row align-items-center">
-    <div class="col-md-8 d-flex gap-2">
-      <button class="btn btn-outline-primary flex-grow-1" (click)="sortBy('name')">
+  <div class="row ms-3">
+    <div class="col-md-8 row gap-2">
+      <button class="btn flex-grow-1 col-md-3" (click)="sortBy('name')"
+              [ngClass]="{'btn-outline-primary': sort === 'name', 'btn-outline-secondary': sort !== 'name' }">
         <fa-icon *ngIf="sort === 'name'" [icon]="direction === 'asc' ? faSortUp : faSortDown"></fa-icon>
         <fa-icon *ngIf="sort !== 'name'" [icon]="faSort"></fa-icon>
-        Sort by Name
+        Name
       </button>
-      <button class="btn btn-outline-primary flex-grow-1" (click)="sortBy('price')">
+      <button class="btn flex-grow-1 col-md-3" (click)="sortBy('price')"
+              [ngClass]="{'btn-outline-primary': sort === 'price', 'btn-outline-secondary': sort !== 'price' }">
         <fa-icon *ngIf="sort === 'price'" [icon]="direction === 'asc' ? faSortUp : faSortDown"></fa-icon>
         <fa-icon *ngIf="sort !== 'price'" [icon]="faSort"></fa-icon>
-        Sort by Price
+        Price
       </button>
-      <button class="btn btn-outline-primary flex-grow-1" (click)="sortBy('amountLeft')">
+      <button class="btn flex-grow-1 col-md-3" (click)="sortBy('amountLeft')"
+              [ngClass]="{'btn-outline-primary': sort === 'amountLeft', 'btn-outline-secondary': sort !== 'amountLeft' }">
         <fa-icon *ngIf="sort === 'amountLeft'" [icon]="direction === 'asc' ? faSortUp : faSortDown"></fa-icon>
         <fa-icon *ngIf="sort !== 'amountLeft'" [icon]="faSort"></fa-icon>
-        Sort by Amount
+        Amount
+      </button>
+      <button class="btn flex-grow-1 col-md-1" (click)="sortBy('id')"
+              [ngClass]="{'btn-outline-danger': sort !== 'id', 'btn-outline-secondary': sort === 'id' }">
+        <fa-icon [icon]="faTrashRestore"></fa-icon>
       </button>
     </div>
     <div class="col-md-4">
@@ -44,7 +51,7 @@
       </button>
     </div>
     <div class="col-md-3">
-      <div class="d-flex align-items-center mb-2">
+      <div class="d-flex align-items-center">
         <input type="range"
                class="form-range"
                min="0"
@@ -54,7 +61,7 @@
                id="minPriceSlider">
         <span class="ms-2">${{minPrice}}</span>
       </div>
-      <div class="d-flex align-items-center mb-2">
+      <div class="d-flex align-items-center">
         <input type="range"
                class="form-range"
                min="0"

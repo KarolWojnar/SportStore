@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortDown, faSortUp, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { CartProductComponent } from './cart-product/cart-product.component';
 import { MatSliderModule } from '@angular/material/slider';
@@ -123,4 +123,6 @@ export class ProductComponent implements AfterViewInit, OnInit {
       this.maxPrice = this.maxPriceFromData;
     });
   }
+
+  protected readonly faTrashRestore = faTrashRestore;
 }

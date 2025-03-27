@@ -15,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*", exposedHeaders = "Authorization")
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -64,7 +63,7 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
         try {
             userService.logout(response, request);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } catch (UserException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

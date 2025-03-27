@@ -32,7 +32,7 @@ public class SchedulerService {
     private final OrderRepository orderRepository;
     private final OrderService orderService;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void clearInactive() {
         List<Activation> codes = activationRepository.findAllByExpiresAtBefore(java.time.LocalDateTime.now());
         List<String> userIds = codes.stream()
@@ -60,7 +60,7 @@ public class SchedulerService {
         log.info("Deleted {} carts. date: {}", carts.size(), Date.from(Instant.now()));
     }
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 */15 * * * *")
     public void changeOrderStatus() {
         Date minusTwoDays = new Date(System.currentTimeMillis() - ConstantStrings.ORDER_CHANGE.toMillis());
         List<Order> orders = orderRepository

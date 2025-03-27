@@ -7,6 +7,7 @@ import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.service.store.PaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,6 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*", exposedHeaders = "Authorization")
 @RequestMapping("/api/payment")
 public class PaymentController {
 
@@ -57,21 +57,20 @@ public class PaymentController {
     public ResponseEntity<?> cancelPayment() {
         try {
             paymentService.cancelPayment();
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
+    @Async
     @PostMapping("/webhook")
-    public ResponseEntity<?> webhook(@RequestBody String payload,
+    public void webhook(@RequestBody String payload,
                                      @RequestHeader("Stripe-Signature") String signature) {
         try {
             paymentService.webhook(payload, signature);
-            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            log.info("Error during webhook: " + e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            log.info("Error during webhook: {}", e.getMessage());
         }
     }
 }

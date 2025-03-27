@@ -16,9 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.CREATED;
+
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*", exposedHeaders = "Authorization")
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/admin")
 public class AdminController {
@@ -101,7 +102,7 @@ public class AdminController {
     public ResponseEntity<?> addProduct(@RequestPart("product") String productJson,
                                         @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            return ResponseEntity.ok(Map.of("product", productService.addProduct(productJson, file)));
+            return new ResponseEntity<>(Map.of("product", productService.addProduct(productJson, file)), CREATED);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error adding product: " + e.getMessage()));
         }
@@ -110,7 +111,7 @@ public class AdminController {
     @PostMapping("/categories")
     public ResponseEntity<?> addCategory(@RequestBody String category) {
         try {
-            return ResponseEntity.ok(Map.of("category", productService.addCategory(category)));
+            return new ResponseEntity<>(Map.of("category", productService.addCategory(category)), CREATED);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error adding category: " + e.getMessage()));
         }
@@ -131,7 +132,7 @@ public class AdminController {
     public ResponseEntity<?> changeOrderStatus(@PathVariable String id){
         try {
             orderService.cancelOrder(id, true);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Error changing order status: " + e.getMessage()));
         }

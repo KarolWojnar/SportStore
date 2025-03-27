@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true", allowedHeaders = "*", exposedHeaders = "Authorization")
 @PreAuthorize("isAuthenticated()")
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -40,7 +39,7 @@ public class OrderController {
     public ResponseEntity<?> cancelOrder(@PathVariable String id) {
         try {
             orderService.cancelOrder(id, false);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
@@ -50,7 +49,7 @@ public class OrderController {
     public ResponseEntity<?> refundOrder(@PathVariable String id) {
         try {
             orderService.refundOrder(id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

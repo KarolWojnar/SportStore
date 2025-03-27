@@ -82,7 +82,7 @@ public class JwtUtil {
         redisBlacklistTemplate.opsForValue().set("black_list:" + token, tokenType, exp, TimeUnit.MILLISECONDS);
     }
 
-    public boolean isBlackListed(String token, String tokenType) {
-        return redisBlacklistTemplate.hasKey("black_list:" + token) && tokenType.equals(redisBlacklistTemplate.opsForValue().get("black_list:" + token));
+    public boolean isBlackListed(String token) {
+        return redisBlacklistTemplate.hasKey("black_list:" + token);
     }
 }
