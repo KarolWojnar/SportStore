@@ -26,6 +26,8 @@ import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.shop.sportwebstore.service.user.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentService {
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
     private final UserRepository userRepository;
     private final CartService cartService;
     private final ProductRepository productRepository;
@@ -61,6 +64,7 @@ public class PaymentService {
         double totalPrice = ((cartService.calculateTotalPrice(cart) + shippingPrice)) * 100;
         String orderId = orderService.createOrder(cart, customer, totalPrice, orderDto.getPaymentMethod());
         String url = preparePaymentTemplate(orderDto, (long) (totalPrice), orderId);
+        log.info("Start payment for {}", customer.getUserId());
         cartService.deleteCart(customer.getUserId());
         return url;
     }

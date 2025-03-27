@@ -130,10 +130,7 @@ public class UserService {
                 }
             }
         }
-
         SecurityContextHolder.clearContext();
-
-        log.info("Logout successful");
     }
 
     private String extractAccessToken(HttpServletRequest request) {
@@ -233,6 +230,7 @@ public class UserService {
         customer.setLastName(orderDto.getLastName());
         customer.setShippingAddress(orderDto.getShippingAddress());
         customerRepository.save(customer);
+        log.info("Created or updated customer for user: {}", user.getId());
         return customer;
     }
 
@@ -296,11 +294,13 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found."));
         user.setEnabled(status);
         userRepository.save(user);
+        log.info("Changed status of user {} to {}", user.getId(), status);
     }
 
     public void changeUserRole(String id, String role) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found."));
         user.setRole(Roles.valueOf(role));
         userRepository.save(user);
+        log.info("Changed role of user {} to {}", user.getId(), role);
     }
 }

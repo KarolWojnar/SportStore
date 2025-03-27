@@ -49,6 +49,7 @@ public class EmailService {
             helper.setText(ConstantStrings.ACTIVATION_EMAIL_BODY
                     .formatted(urlLink, expiration, urlLink, urlLink), true);
             javaMailSender.send(message);
+            log.info("Activation email sent to {}", email);
         } catch (Exception e) {
             throw new RuntimeException("Failed to send activation email", e);
         }
@@ -66,6 +67,7 @@ public class EmailService {
             helper.setText(ConstantStrings.RESET_PASSWORD_BODY
                     .formatted(urlLink, expiration, urlLink, urlLink), true);
             javaMailSender.send(message);
+            log.info("Reset password email sent to {}", email);
         } catch (Exception e) {
             throw new RuntimeException("Failed to send reset password email", e);
         }
@@ -96,6 +98,7 @@ public class EmailService {
             );
             helper.setText(emailBody, true);
             javaMailSender.send(message);
+            log.info("Order email sent to {}", user.getEmail());
         } catch (Exception e) {
             throw new RuntimeException("Failed to send order email", e);
         }
@@ -122,6 +125,7 @@ public class EmailService {
             String emailBody = getString(order, customer, itemsHtml);
             helper.setText(emailBody, true);
             javaMailSender.send(message);
+            log.info("Delivered email sent to {}", user.getEmail());
         } catch (Exception e) {
             throw new RuntimeException("Failed to send delivered email", e);
         }
