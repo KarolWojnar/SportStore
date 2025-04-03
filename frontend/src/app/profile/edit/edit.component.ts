@@ -68,7 +68,7 @@ export class EditComponent implements OnInit {
     this.isLoading = true;
     this.authService.getUserInfo().subscribe({
       next: (response) => {
-        this.user = response.user;
+        this.user = response;
         this.profileForm.patchValue({
           firstName: this.user.firstName,
           lastName: this.user.lastName,

@@ -12,7 +12,6 @@ import {
   faUnlock
 } from '@fortawesome/free-solid-svg-icons';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { ThemeService } from '../service/theme.service';
 import { AuthService } from '../service/auth.service';
 import { AuthStateService } from '../service/auth-state.service';
 
@@ -39,8 +38,7 @@ export class HeaderComponent implements OnInit {
   isAdmin = false;
   cartHasItems = true;
 
-  constructor(private themeService: ThemeService,
-              private authService: AuthService,
+  constructor(private authService: AuthService,
               private router: Router,
               private authState: AuthStateService) { }
 
@@ -48,10 +46,6 @@ export class HeaderComponent implements OnInit {
     this.authState.isLoggedIn$.subscribe((isLoggedIn) => {
       this.isLoggedIn = isLoggedIn;
       if (this.isLoggedIn) {
-        this.themeService.loadThemePreference().subscribe((isDarkMode) => {
-          this.authState.setDarkMode(isDarkMode.isDarkMode);
-        });
-
         this.authService.getRole().subscribe((roleResponse) => {
           this.authState.setAdmin(roleResponse.role === 'ROLE_ADMIN');
         });
@@ -66,7 +60,7 @@ export class HeaderComponent implements OnInit {
 
     this.authState.isDarkMode$.subscribe((isDarkMode) => {
       this.isDarkMode = isDarkMode;
-      this.themeService.applyTheme(this.isDarkMode);
+      this.applyTheme(this.isDarkMode);
     });
 
     this.authState.isAdmin$.subscribe((isAdmin) => {
@@ -74,9 +68,16 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+  applyTheme(isDarkMode: boolean) {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }
+
   toggleTheme() {
     this.isDarkMode = !this.isDarkMode;
-    this.themeService.toggleTheme(this.isDarkMode).subscribe();
     this.authState.setDarkMode(this.isDarkMode);
   }
 

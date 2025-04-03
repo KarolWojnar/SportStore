@@ -3,7 +3,6 @@ package org.shop.sportwebstore.controller;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.RateProductDto;
 import org.shop.sportwebstore.service.store.CartService;
 import org.shop.sportwebstore.service.store.ProductService;
@@ -33,129 +32,77 @@ public class StoreController {
                                          @RequestParam(value = "minPrice", defaultValue = "0") @Min(0) int minPrice,
                                          @RequestParam(value = "maxPrice", defaultValue = "9999") @Max(9999) int maxPrice,
                                          @RequestParam(value = "categories", defaultValue = "", required = false) List<String> categories) {
-        try {
-            return ResponseEntity.ok(productService.getProducts(page, size, sort, direction, search, minPrice, maxPrice, categories, false));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        return ResponseEntity
+                .ok(productService
+                        .getProducts(page, size, sort, direction, search, minPrice, maxPrice, categories, false));
     }
 
     @Cacheable("maxPrice")
     @GetMapping("/max-price")
     public ResponseEntity<?> getMaxPrice() {
-        try {
-            return ResponseEntity.ok(Map.of("maxPrice", productService.getMaxPrice()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of("maxPrice", productService.getMaxPrice()));
     }
 
     @GetMapping("/categories")
     public ResponseEntity<?> getCategories() {
-        return ResponseEntity.ok(Map.of("categories", productService.getCategories()));
+        return ResponseEntity.ok(productService.getCategories());
     }
 
     @GetMapping("/featured")
     public ResponseEntity<?> getFeaturedProducts() {
-        try {
-            return ResponseEntity.ok(productService.getFeaturedProducts());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        return ResponseEntity.ok(productService.getFeaturedProducts());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductDetails(@PathVariable String id) {
-        try {
-            return ResponseEntity.ok(productService.getDetails(id));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        return ResponseEntity.ok(productService.getDetails(id));
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/cart")
     public ResponseEntity<?> getCart() {
-        try {
-            return ResponseEntity.ok(cartService.getCart());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        return ResponseEntity.ok(cartService.getCart());
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/cart/add")
     public ResponseEntity<?> addToCart(@RequestBody String productId) {
-        try {
-            cartService.addToCart(productId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        cartService.addToCart(productId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/cart/remove")
     public ResponseEntity<?> removeFromCart(@RequestBody String id) {
-        try {
-            cartService.removeFromCart(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        cartService.removeFromCart(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/cart/{id}")
     public ResponseEntity<?> deleteAllFromProduct(@PathVariable String id) {
-        try {
-            cartService.deleteAllFromProduct(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        cartService.deleteAllFromProduct(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/cart")
     public ResponseEntity<?> deleteCart() {
-        try {
-            cartService.deleteCart();
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        cartService.deleteCart();
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/cart/valid")
     public ResponseEntity<?> validateCart() {
-        try {
-            cartService.validateCart();
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/cart/totalPrice")
-    public ResponseEntity<?> calculateTotalPrice() {
-        try {
-            return ResponseEntity.ok(Map.of("totalPrice", cartService.calculateTotalPriceOfCart()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        cartService.validateCart();
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/rate")
     public ResponseEntity<?> rateProduct(@RequestBody RateProductDto rateProductDto) {
-        try {
-            productService.rateProduct(rateProductDto);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        productService.rateProduct(rateProductDto);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CustomerDetails, UserDetails, UserDto } from '../model/user-dto';
+import { CustomerDetails, UserDetails, UserDto, UserLoginStatus } from '../model/user-dto';
 import { catchError, Observable, of, tap } from 'rxjs';
 import { AuthStateService } from './auth-state.service';
 
@@ -51,14 +51,14 @@ export class AuthService {
     return this.httpClient.get(`${this.apiUrl}/auth/activate/${activationCode}`);
   }
 
-  isLoggedIn(): Observable<{ isLoggedIn: boolean }> {
-    return this.httpClient.get<{ isLoggedIn: boolean }>(`${this.apiUrl}/auth/isLoggedIn`).pipe(
+  isLoggedIn(): Observable<any> {
+    return this.httpClient.get<UserLoginStatus>(`${this.apiUrl}/auth/isLoggedIn`).pipe(
       catchError(() => {
         this.authState.setLoggedIn(false);
         this.authState.setAdmin(false);
         localStorage.removeItem('token');
         localStorage.removeItem('isAdmin');
-        return of({ isLoggedIn: false });
+        return of({ loggedIn: false });
       })
     );
   }
@@ -85,7 +85,7 @@ export class AuthService {
     return this.httpClient.post<{response: any}>(`${this.apiUrl}/auth/reset-password`, {password, confirmPassword, code});
   }
 
-  getUserInfo(): Observable<{ user: UserDetails }> {
-    return this.httpClient.get<{ user: UserDetails }>(`${this.apiUrl}/users`);
+  getUserInfo(): Observable<UserDetails> {
+    return this.httpClient.get<UserDetails>(`${this.apiUrl}/users`);
   }
 }

@@ -2,7 +2,6 @@ package org.shop.sportwebstore.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.shop.sportwebstore.model.ErrorResponse;
 import org.shop.sportwebstore.model.dto.OrderDto;
 import org.shop.sportwebstore.service.store.PaymentService;
 import org.springframework.http.HttpStatus;
@@ -11,7 +10,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,43 +22,27 @@ public class PaymentController {
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createPayment(@RequestBody OrderDto orderDto) {
-        try {
-            String paymentUrl = paymentService.createPayment(orderDto);
-            return new ResponseEntity<>(Map.of("url", paymentUrl), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        String paymentUrl = paymentService.createPayment(orderDto);
+        return new ResponseEntity<>(paymentUrl, HttpStatus.CREATED);
     }
 
     @PostMapping("/repay")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createRepayment(@RequestBody String orderId) {
-        try {
             String paymentUrl = paymentService.createRepayment(orderId);
-            return ResponseEntity.ok(Map.of("url", paymentUrl));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+            return ResponseEntity.ok(paymentUrl);
     }
 
     @GetMapping("/summary")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getSummary() {
-        try {
-            return ResponseEntity.ok(Map.of("order", paymentService.getSummary()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+        return ResponseEntity.ok(paymentService.getSummary());
     }
     @DeleteMapping("/cancel")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> cancelPayment() {
-        try {
-            paymentService.cancelPayment();
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        paymentService.cancelPayment();
+        return ResponseEntity.noContent().build();
     }
 
     @Async

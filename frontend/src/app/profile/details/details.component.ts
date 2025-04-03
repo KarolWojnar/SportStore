@@ -27,7 +27,7 @@ export class DetailsComponent implements OnInit {
   getUserInfo() {
     this.authService.getUserInfo().subscribe({
       next: (response) => {
-        this.user = response.user;
+        this.user = response;
         this.isLoading = false;
       },
       error: (error) => {

@@ -59,7 +59,7 @@ export class OrderInfoComponent implements OnInit {
     if (orderId) {
       this.storeService.getOrderById(orderId).subscribe({
         next: (response) => {
-          this.order = response.order;
+          this.order = response;
           if (this.order.status === 'CREATED') {
             this.calculateTimeToDelete();
           }
@@ -102,8 +102,8 @@ export class OrderInfoComponent implements OnInit {
       this.storeService.goToRepayment(this.order.id).subscribe({
         next: (response) => {
           this.isLoading = false;
-          if (response.url) {
-            window.location.href = response.url;
+          if (response) {
+            window.location.href = response;
           }
         },
         error: (err) => {

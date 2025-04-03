@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UserDetails } from '../model/user-dto';
+import { UserDetails, UserRole, UserStatus } from '../model/user-dto';
 import { ProductInfo, ProductsResponse } from '../model/product';
 import { OrderBaseInfo } from '../model/order';
 
@@ -29,11 +29,11 @@ export class AdminService {
     return this.httpClient.get<{users: UserDetails[]}>(`${this.apiUrl}/users`, { params });
   }
 
-  setActivationUser(userId: string, status: boolean) {
+  setActivationUser(userId: string, status: UserStatus) {
     return this.httpClient.patch(`${this.apiUrl}/users/${userId}`, status);
   }
 
-  setRole(id: string, role: string) {
+  setRole(id: string, role: UserRole) {
     return this.httpClient.patch(`${this.apiUrl}/users/${id}/role`, role);
   }
 
