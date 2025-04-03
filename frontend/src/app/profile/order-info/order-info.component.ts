@@ -102,8 +102,8 @@ export class OrderInfoComponent implements OnInit {
       this.storeService.goToRepayment(this.order.id).subscribe({
         next: (response) => {
           this.isLoading = false;
-          if (response) {
-            window.location.href = response;
+          if (response.url) {
+            window.location.href = response.url;
           }
         },
         error: (err) => {

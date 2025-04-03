@@ -8,6 +8,7 @@ import org.shop.sportwebstore.model.DeliveryTime;
 import org.shop.sportwebstore.model.OrderStatus;
 import org.shop.sportwebstore.model.ShippingAddress;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class OrderDto {
     private List<OrderProductDto> productsDto;
     private OrderStatus status;
     private ShippingAddress shippingAddress;
-    private double totalPrice;
+    private BigDecimal totalPrice;
     private Date deliveryDate;
     private Date orderDate;
     private DeliveryTime deliveryTime;

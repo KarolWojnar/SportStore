@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,21 +78,17 @@ class PaymentServiceTest {
         Cart cart = new Cart(userId);
         cart.addProduct(productId, 2);
 
-        Product product = new Product();
-        product.setId(productId);
-        product.setPrice(10.0);
-
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
         when(customerRepository.findByUserId(userId)).thenReturn(Optional.of(customer));
         when(cartService.getCart(userId)).thenReturn(cart);
-        when(cartService.calculateTotalPrice(cart)).thenReturn(20.0);
+        when(cartService.calculateTotalPrice(cart)).thenReturn(BigDecimal.valueOf(20.0));
 
         OrderDto result = paymentService.getSummary();
 
         assertNotNull(result);
         assertEquals("John", result.getFirstName());
-        assertEquals(20.0, result.getTotalPrice());
-        verify(cartService).checkCartProducts(cart, true);
+        assertEquals(BigDecimal.valueOf(20.0), result.getTotalPrice());
+        verify(cartService).checkCartProducts(cart);
     }
 
     @Test

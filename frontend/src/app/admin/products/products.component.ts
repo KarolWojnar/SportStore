@@ -190,9 +190,9 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Product updated successfully:', response);
           const index = this.products.findIndex(product => product.id === productId);
           if (index !== -1) {
-            this.products[index].name = response.product.name;
-            this.products[index].quantity = response.product.quantity;
-            this.products[index].price = response.product.price;
+            this.products[index].name = response.name;
+            this.products[index].quantity = response.quantity;
+            this.products[index].price = response.price;
           }
           this.cancelEdit();
         },
@@ -236,9 +236,10 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   saveCategory() {
     if (this.newCategory) {
-      this.adminService.addCategory(this.newCategory).subscribe({
+      const categoryNew = {name: this.newCategory}
+      this.adminService.addCategory(categoryNew).subscribe({
         next: (response) => {
-          this.categories.push(response.category.name);
+          this.categories.push(response.name);
           this.newCategory = null;
           this.errorMessage = null;
           this.showForm = false;

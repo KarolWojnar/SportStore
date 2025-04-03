@@ -1,5 +1,6 @@
 package org.shop.sportwebstore.service;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 
 public final class ConstantStrings {
@@ -11,6 +12,8 @@ public final class ConstantStrings {
     public static final Duration ORDER_EXPIRATION = Duration.ofMinutes(30);
     public static final Duration ORDER_CHANGE = Duration.ofDays(2);
     public static final Duration ORDER_DELETE = Duration.ofDays(1);
+    public static final BigDecimal STANDARD_SHIPPING = BigDecimal.ZERO;
+    public static final BigDecimal EXPRESS_SHIPPING = new BigDecimal("10.00");
 
     public static final String ACTIVATION_EMAIL_BODY = """
         <html>

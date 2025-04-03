@@ -37,4 +37,8 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     @Update("{ $inc: { orders: ?1 } }")
     void incrementSoldById(String productId, int amountItems);
 
+    @Query("{ 'id': { '$eq': ?0 } }")
+    @Update("{ $inc: { amountLeft: ?1 } }")
+    void decrementAmountLeftById(String id, int amountLeft);
+
 }

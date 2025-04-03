@@ -3,17 +3,17 @@ package org.shop.sportwebstore.model.entity;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.shop.sportwebstore.model.Roles;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Data
+import java.util.Objects;
+
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,4 +32,19 @@ public class User {
     private Roles role = Roles.ROLE_CUSTOMER;
     @Builder.Default
     private boolean enabled = false;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return email.equals(user.email) && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, id);
+    }
 }

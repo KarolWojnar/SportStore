@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.shop.sportwebstore.model.entity.Order;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -15,7 +16,7 @@ public class OrderBaseDto {
     private Date orderDate;
     private Date deliveryDate;
     private String status;
-    private double totalPrice;
+    private BigDecimal totalPrice;
 
     public static OrderBaseDto mapToDto(Order order) {
         return OrderBaseDto.builder()

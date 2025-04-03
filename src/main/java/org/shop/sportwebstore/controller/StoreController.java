@@ -1,5 +1,6 @@
 package org.shop.sportwebstore.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -80,8 +81,8 @@ public class StoreController {
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/cart/{id}")
-    public ResponseEntity<?> deleteAllFromProduct(@PathVariable String id) {
-        cartService.deleteAllFromProduct(id);
+    public ResponseEntity<?> removeAllAmountOfProductFromCart(@PathVariable String id) {
+        cartService.removeAllAmountOfProductFromCart(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -101,7 +102,7 @@ public class StoreController {
 
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/rate")
-    public ResponseEntity<?> rateProduct(@RequestBody RateProductDto rateProductDto) {
+    public ResponseEntity<?> rateProduct(@Valid @RequestBody RateProductDto rateProductDto) {
         productService.rateProduct(rateProductDto);
         return ResponseEntity.noContent().build();
     }

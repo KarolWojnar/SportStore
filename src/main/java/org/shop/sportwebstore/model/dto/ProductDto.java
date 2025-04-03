@@ -5,6 +5,7 @@ import lombok.Data;
 import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class ProductDto {
     private String name;
     private String id;
     private String description;
-    private double price;
+    private BigDecimal price;
     private int quantity;
     private double rating;
     private String image;

@@ -4,7 +4,7 @@ import { AdminService } from '../../../service/admin.service';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgForOf, NgIf } from '@angular/common';
-import { NewProduct } from '../../../model/product';
+import { CategoryNew, NewProduct } from '../../../model/product';
 import { StoreService } from '../../../service/store.service';
 
 @Component({
@@ -25,7 +25,7 @@ export class NewComponent implements OnInit {
   newProduct!: NewProduct;
   selectedFile: File | null = null;
   isLoading = false;
-  categories: string[] = [];
+  categories: CategoryNew[] = [];
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
@@ -51,7 +51,8 @@ export class NewComponent implements OnInit {
   getCategories() {
     this.storeService.getCategories().subscribe({
       next: (data) => {
-        this.categories = data.categories;
+        console.log(data)
+        this.categories = data;
       },
       error: (error) => {
         console.error('Error fetching categories:', error);

@@ -6,14 +6,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.shop.sportwebstore.exception.ProductException;
-import org.shop.sportwebstore.model.dto.ProductDto;
-import org.shop.sportwebstore.model.dto.RateProductDto;
+import org.shop.sportwebstore.model.dto.*;
 import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
 import org.shop.sportwebstore.repository.CategoryRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.springframework.data.domain.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -108,11 +109,10 @@ class ProductServiceTest {
                 .thenReturn(productPage);
         when(categoryRepository.findAll()).thenReturn(List.of(new Category(categoryName)));
 
-        Map<String, Object> result = productService.getProducts(0, 10, "name", "asc", "test", 0, 9999, null, false);
+        ProductsListInfo result = productService.getProducts(0, 10, "name", "asc", "test", 0, 9999, null, false);
 
         assertNotNull(result);
-        assertEquals(1, ((List<?>) result.get("products")).size());
-        assertTrue(result.containsKey("categories"));
+        assertEquals(1, (result.getProducts().size()));
     }
 
     @Test
@@ -174,8 +174,9 @@ class ProductServiceTest {
     void addCategory_ShouldCreateNewCategory() {
         when(categoryRepository.existsByName(categoryName)).thenReturn(false);
         when(categoryRepository.save(any(Category.class))).thenReturn(new Category(categoryName));
+        CategoryDto categoryDto = new CategoryDto(categoryName);
 
-        Category result = productService.addCategory(categoryName);
+        CategoryDto result = productService.addCategory(categoryDto);
 
         assertNotNull(result);
         assertEquals(categoryName, result.getName());
@@ -184,8 +185,9 @@ class ProductServiceTest {
     @Test
     void addCategory_ShouldThrowForExistingCategory() {
         when(categoryRepository.existsByName(categoryName)).thenReturn(true);
+        CategoryDto categoryDto = new CategoryDto(categoryName);
 
-        assertThrows(ProductException.class, () -> productService.addCategory(categoryName));
+        assertThrows(ProductException.class, () -> productService.addCategory(categoryDto));
     }
 
     @Test
@@ -193,11 +195,12 @@ class ProductServiceTest {
         Product product = new Product();
         product.setId(productId);
         product.setAvailable(false);
+        ProductAvailability availability = new ProductAvailability(true);
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(productRepository.save(product)).thenReturn(product);
 
-        ProductDto result = productService.changeProductAvailability(productId, true);
+        ProductDto result = productService.changeProductAvailability(productId, availability);
 
         assertNotNull(result);
         assertTrue(product.isAvailable());
@@ -214,7 +217,7 @@ class ProductServiceTest {
         ProductDto dto = new ProductDto();
         dto.setId(productId);
         dto.setName("Test Product");
-        dto.setPrice(100.0);
+        dto.setPrice(new BigDecimal("100.0"));
         dto.setQuantity(10);
         dto.setCategories(List.of(categoryName));
         return dto;

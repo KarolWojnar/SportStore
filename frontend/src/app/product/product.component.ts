@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { StoreService } from '../service/store.service';
-import { Product } from '../model/product';
+import { CategoryNew, Product } from '../model/product';
 import { RouterModule } from '@angular/router';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
@@ -27,7 +27,7 @@ export class ProductComponent implements AfterViewInit, OnInit {
   sort = 'id';
   direction = 'asc';
   selectedCategories: string[] = [];
-  allCategories: string[] = [];
+  allCategories: CategoryNew[] = [];
 
   faSort = faSort;
   faSortUp = faSortUp;
@@ -96,7 +96,7 @@ export class ProductComponent implements AfterViewInit, OnInit {
 
   loadCategories(): void {
     this.storeService.getCategories().subscribe(categories => {
-      this.allCategories = categories.categories;
+      this.allCategories = categories;
     });
   }
 

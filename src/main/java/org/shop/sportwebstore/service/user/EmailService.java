@@ -3,7 +3,6 @@ package org.shop.sportwebstore.service.user;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.ProductInOrder;
 import org.shop.sportwebstore.model.entity.*;
@@ -131,7 +130,7 @@ public class EmailService {
         }
     }
 
-    private @NotNull String getString(Order order, Customer customer, StringBuilder itemsHtml) {
+    private String getString(Order order, Customer customer, StringBuilder itemsHtml) {
         String urlOrder = url + "profile/orders/" + order.getId();
         String emailTemplate = ORDER_SUMMARY_EMAIL_BODY.replace("%", "%%");
 

@@ -34,7 +34,7 @@ export class OrdersComponent implements OnInit {
   ngOnInit(): void {
     this.storeService.getUserOrders().subscribe({
       next: (response) => {
-        this.orders = response.orders;
+        this.orders = response;
         this.isLoading = false;
       },
       error: (err) => {

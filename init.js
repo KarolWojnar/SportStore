@@ -243,7 +243,8 @@ for (const template of productTemplates) {
         const product = {
             _id: ObjectId(),
             name: template.name + " " + (i + 1),
-            price: parseFloat((getRandomInt(template.priceRange[0] * 100, template.priceRange[1] * 100) / 100).toFixed(2)),
+            _class: 'org.shop.sportwebstore.model.entity.Product',
+            price: NumberDecimal((getRandomInt(template.priceRange[0] * 100, template.priceRange[1] * 100) / 100).toString()),
             amountLeft: getRandomInt(0, 100),
             orders: getRandomInt(8, 1000),
             description: template.description,

@@ -4,8 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.exception.ProductException;
-import org.shop.sportwebstore.model.dto.ProductDto;
-import org.shop.sportwebstore.model.dto.RateProductDto;
+import org.shop.sportwebstore.model.dto.*;
 import org.shop.sportwebstore.model.entity.Category;
 import org.shop.sportwebstore.model.entity.Product;
 import org.shop.sportwebstore.repository.CategoryRepository;
@@ -20,10 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Service
@@ -69,7 +69,7 @@ public class ProductService {
             }
 
             Path filePath = uploadDir.resolve(fileName);
-            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(image.getInputStream(), filePath);
 
             return "external-images/" + fileName;
         } catch (IOException e) {
@@ -81,23 +81,30 @@ public class ProductService {
         if (!productDto.getId().equals(id)) {
             throw new ProductException("Product id must be the same.");
         }
-        ValidationUtil.validProductData(productDto);
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
-        product.setName(productDto.getName());
-        product.setPrice(productDto.getPrice());
-        product.setAmountLeft(productDto.getQuantity());
+        if (productDto.getPrice() != null && productDto.getPrice().compareTo(BigDecimal.ZERO) > 0) {
+            product.setPrice(productDto.getPrice().setScale(2, RoundingMode.HALF_UP));
+        }
+
+        if (productDto.getName() != null && !productDto.getName().isEmpty()) {
+            product.setName(productDto.getName());
+        }
+
+        if (productDto.getQuantity() >= 0) {
+            product.setAmountLeft(productDto.getQuantity());
+        }
         return ProductDto.minEdited(productRepository.save(product));
     }
 
-    public Map<String, Object> getProducts(int page, int size, String sort, String direction,
+    public ProductsListInfo getProducts(int page, int size, String sort, String direction,
                                            String search, int minPrice, int maxPrice, List<String> categories, boolean isAdmin) {
         Page<Product> products = fetchProducts(page, size, sort, direction, search, minPrice, maxPrice, categories, isAdmin);
-        Map<String, Object> response = new java.util.HashMap<>(Map.of(
-                "products", products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
-                "totalElements", products.getTotalElements()
-        ));
+        ProductsListInfo response = new ProductsListInfo(
+                products.getContent().stream().map(product -> ProductDto.toDto(product, false)).toList(),
+                products.getTotalElements()
+        );
         if (page == 0) {
-            response.put("categories", getCategories());
+            response.setCategories(getCategories().stream().map(CategoryDto::getName).toList());
         }
         return response;
     }
@@ -106,17 +113,14 @@ public class ProductService {
         Sort.Direction direct = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sortObj = Sort.by(direct, sort);
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        Page<Product> products;
         if (categories == null || categories.isEmpty()) {
-            products = productRepository.findByNameMatchesRegexIgnoreCase(".*" + search + ".*", !isAdmin, minPrice, maxPrice, pageable);
-        } else {
-            products = productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, !isAdmin, minPrice, maxPrice, pageable);
+            return productRepository.findByNameMatchesRegexIgnoreCase(".*" + search + ".*", !isAdmin, minPrice, maxPrice, pageable);
         }
-        return products;
+            return productRepository.findByNameMatchesRegexIgnoreCaseAndCategoriesIn(".*" + search + ".*", categories, !isAdmin, minPrice, maxPrice, pageable);
     }
 
-    public List<String> getCategories() {
-        return categoryRepository.findAll().stream().map(Category::getName).toList();
+    public List<CategoryDto> getCategories() {
+        return categoryRepository.findAll().stream().map(CategoryDto::toDto).toList();
     }
 
     public Map<String, Object> getFeaturedProducts() {
@@ -135,41 +139,38 @@ public class ProductService {
 
     @Transactional(rollbackFor = ProductException.class)
     public void rateProduct(RateProductDto rateProductDto) {
-        Product product = productRepository.findById(rateProductDto.getProductId()).orElseThrow(() -> new ProductException("Product not found."));
-        if (rateProductDto.getRating() < 1 || rateProductDto.getRating() > 5) {
-            throw new ProductException("Rating must be between 1 and 5.");
-        }
-        int key = 0;
-        double value = 0;
-        for (Map.Entry<Integer, Double> entry : product.getRatings().entrySet()) {
-            key = entry.getKey();
-            value = entry.getValue();
-        }
+        Product product = productRepository.findById(rateProductDto.getProductId())
+                .orElseThrow(() -> new ProductException("Product not found."));
 
-        double finalRating = ((value * key) + (double) rateProductDto.getRating()) / (key + 1);
+        Map<Integer, Double> ratings = product.getRatings();
+        int totalRatings = ratings.isEmpty() ? 0 : Collections.max(ratings.keySet());
+        double currentAvg = ratings.getOrDefault(totalRatings, 0.0);
+
+        double finalRating = ((totalRatings * currentAvg) + (double) rateProductDto.getRating()) / (totalRatings + 1);
         finalRating = Math.round(finalRating * 100.0) / 100.0;
 
-        product.getRatings().put(key + 1, finalRating);
-        product.getRatings().remove(key);
+        double finalRating1 = finalRating;
+        product.getRatings().putIfAbsent(totalRatings + 1, finalRating1);
+        product.getRatings().remove(totalRatings);
 
         orderService.setOrderProductAsRated(rateProductDto.getOrderId(), rateProductDto.getProductId());
         productRepository.save(product);
     }
 
-    public Category addCategory(String category) {
-        if (categoryRepository.existsByName(category)) {
+    public CategoryDto addCategory(CategoryDto category) {
+        if (categoryRepository.existsByName(category.getName())) {
             throw new ProductException("Category already exists.");
         }
-        return categoryRepository.save(new Category(category));
+        return new CategoryDto(categoryRepository.save(new Category(category.getName())).getName());
     }
 
-    public ProductDto changeProductAvailability(String id, boolean available) {
+    public ProductDto changeProductAvailability(String id, ProductAvailability available) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductException("Product not found."));
-        product.setAvailable(available);
+        product.setAvailable(available.isAvailable());
         return ProductDto.minEdited(productRepository.save(product));
     }
 
-    public double getMaxPrice() {
+    public BigDecimal getMaxPrice() {
         return productRepository.findTopByAvailableTrueAndAmountLeftGreaterThanOrderByPriceDesc(0).getPrice();
     }
 }

@@ -3,6 +3,7 @@ package org.shop.sportwebstore.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.model.dto.OrderDto;
+import org.shop.sportwebstore.model.dto.UrlPaymentResponse;
 import org.shop.sportwebstore.service.store.PaymentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +23,13 @@ public class PaymentController {
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createPayment(@RequestBody OrderDto orderDto) {
-        String paymentUrl = paymentService.createPayment(orderDto);
-        return new ResponseEntity<>(paymentUrl, HttpStatus.CREATED);
+        return new ResponseEntity<>(new UrlPaymentResponse(paymentService.createPayment(orderDto)), HttpStatus.CREATED);
     }
 
     @PostMapping("/repay")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createRepayment(@RequestBody String orderId) {
-            String paymentUrl = paymentService.createRepayment(orderId);
-            return ResponseEntity.ok(paymentUrl);
+            return ResponseEntity.ok(new UrlPaymentResponse(paymentService.createRepayment(orderId)));
     }
 
     @GetMapping("/summary")

@@ -1,46 +1,43 @@
 package org.shop.sportwebstore.model.entity;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.shop.sportwebstore.model.OrderStatus;
 import org.shop.sportwebstore.model.ProductInOrder;
 import org.shop.sportwebstore.model.ShippingAddress;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Document(collection = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"products"})
 public class Order {
 
     @Id
     private String id;
     @NotNull(message = "User id is required.")
     private String userId;
-
-    /**
-     * key - product id
-     * value - amount of product
-     */
     @NotNull(message = "Products are required.")
-    private List<ProductInOrder> products;
+    private List<ProductInOrder> products = new ArrayList<>();
     private OrderStatus status = OrderStatus.CREATED;
     private ShippingAddress orderAddress;
     private Date orderDate = Date.from(java.time.Instant.now());
     private Date lastModified = Date.from(java.time.Instant.now());
     private Date deliveryDate;
     private String paymentMethod;
-    private double totalPrice;
+    private BigDecimal totalPrice;
     private String sessionId;
     private boolean emailSent = false;
 
-    public Order(List<ProductInOrder> products, String userId, ShippingAddress address, double price, String paymentMethod) {
+    public Order(List<ProductInOrder> products, String userId, ShippingAddress address, BigDecimal price, String paymentMethod) {
         this.products = products;
         this.userId = userId;
         this.orderAddress = address;
@@ -67,4 +64,18 @@ public class Order {
             }
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return id != null && id.equals(order.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ?  0 : id.hashCode();
+    }
+
 }

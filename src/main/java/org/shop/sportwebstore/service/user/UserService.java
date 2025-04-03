@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Validated
@@ -49,11 +50,12 @@ public class UserService {
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, String> redisBlacklistTemplate;
     private final CartService cartService;
+    private final SecurityContextWrapper securityContextWrapper;
     private final ActivationRepository activationRepository;
-    private final RedisTemplate<String, String> redisTemplate;
     private final MongoTemplate mongoTemplate;
+    private final JwtService jwtService;
     @Value("${jwt.exp}")
     private int exp;
     @Value("${jwt.refresh.exp}")
@@ -75,27 +77,30 @@ public class UserService {
         return UserDto.toUserDto(newUser);
     }
 
-    public String getAuth(AuthUser authRequest) {
-        log.info("Authenticating user: {}", authRequest.getEmail());
+    public String getAuth(User user, AuthUser request) {
+        log.info("Authenticating user: {}", request.getEmail());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            authRequest.getEmail(),
-                            authRequest.getPassword()
+                            request.getEmail(),
+                            request.getPassword()
                     )
             );
         } catch (Exception e) {
             throw new UserException("Invalid email or password.", e);
         }
-        return jwtUtil.generateToken(authRequest.getEmail(), exp);
+        return jwtService.generateToken(user, exp);
     }
 
     public Map<String, Object> login(AuthUser authRequest, HttpServletResponse response) {
         if (authRequest.getEmail() == null || authRequest.getPassword() == null) {
             throw new UserException("Email or password is null.");
         }
-        String token = getAuth(authRequest);
-        String refreshToken = jwtUtil.generateToken(authRequest.getEmail(), refreshExp);
+        User user = userRepository.findByEmail(authRequest.getEmail())
+                .orElseThrow(() -> new UserException("User not found."));
+
+        String token = getAuth(user, authRequest);
+        String refreshToken = jwtService.generateToken(user, refreshExp);
 
         Cookie refreshTokenCookie = new Cookie("Refresh-token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
@@ -115,14 +120,14 @@ public class UserService {
     public void logout(HttpServletResponse response, HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
 
-        long expirationTime = jwtUtil.extractExpiration(extractAccessToken(request)).getTime() - System.currentTimeMillis();
-        jwtUtil.addToBlackList(extractAccessToken(request), expirationTime, "access");
+        long expirationTime = jwtService.extractExpiration(extractAccessToken(request)).getTime() - System.currentTimeMillis();
+        addToBlackList(extractAccessToken(request), expirationTime, "access");
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("Refresh-token".equals(cookie.getName())) {
-                    long expirationRefreshTime = jwtUtil.extractExpiration(cookie.getValue()).getTime() - System.currentTimeMillis();
-                    jwtUtil.addToBlackList(cookie.getValue(), expirationRefreshTime, "refresh");
+                    long expirationRefreshTime = jwtService.extractExpiration(cookie.getValue()).getTime() - System.currentTimeMillis();
+                    addToBlackList(cookie.getValue(), expirationRefreshTime, "refresh");
                     cookie.setValue("");
                     cookie.setPath("/");
                     cookie.setMaxAge(0);
@@ -135,10 +140,10 @@ public class UserService {
 
     private String extractAccessToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new UserException("Missing or invalid Authorization header");
         }
-        return null;
+        return authHeader.substring(7);
     }
 
     @Transactional
@@ -154,24 +159,9 @@ public class UserService {
         return Map.of("email", user.getEmail());
     }
 
-    public boolean saveTheme(boolean isDarkMode) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new UserException("User not found."));
-        redisTemplate.opsForValue().set("theme:" + user.getId(), String.valueOf(isDarkMode));
-        return isDarkMode;
-    }
-
-    public boolean getTheme() {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new UserException("User not found."));
-
-        String value = redisTemplate.opsForValue().get("theme:" + user.getId());
-        return Boolean.parseBoolean(value);
-    }
-
     public boolean isLoggedIn() {
         try {
-            Optional<User> user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+            Optional<User> user = securityContextWrapper.getCurrentUser();
             return user.isPresent() && user.get().isEnabled();
         } catch (Exception e) {
             throw new UserException("User not found.", e);
@@ -180,7 +170,7 @@ public class UserService {
 
     public String getRole() {
         try {
-            User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+            User user = securityContextWrapper.getCurrentUser()
                     .orElseThrow(() -> new UserException("User not found."));
             return user.getRole().name();
         } catch (Exception e) {
@@ -219,7 +209,7 @@ public class UserService {
     }
 
     public Customer findOrCreateCustomer(OrderDto orderDto) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new UserException("User not found."));
         Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
         if (customer == null) {
@@ -235,14 +225,14 @@ public class UserService {
     }
 
     public UserDetailsDto getUserDetails() {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new UserException("User not found."));
         Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
         return UserDetailsDto.toDto(user, customer);
     }
 
     public UserDetailsDto updateUser(CustomerDto user) {
-        User currentUser = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User currentUser = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new UserException("User not found."));
         log.info("Updating user: {}", currentUser.getId());
         Customer customer = customerRepository.findByUserId(currentUser.getId()).orElse(null);
@@ -290,17 +280,21 @@ public class UserService {
         return userDetails;
     }
 
-    public void changeUserStatus(String id, boolean status) {
+    public void changeUserStatus(String id, UserStatusRequest userStatus) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found."));
-        user.setEnabled(status);
+        user.setEnabled(userStatus.isUserStatus());
         userRepository.save(user);
-        log.info("Changed status of user {} to {}", user.getId(), status);
+        log.info("Changed status of user {} to {}", user.getId(), userStatus.isUserStatus());
     }
 
-    public void changeUserRole(String id, String role) {
+    public void changeUserRole(String id, Roles role) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found."));
-        user.setRole(Roles.valueOf(role));
+        user.setRole(role);
         userRepository.save(user);
         log.info("Changed role of user {} to {}", user.getId(), role);
+    }
+
+    public void addToBlackList(String token, long exp, String tokenType) {
+        redisBlacklistTemplate.opsForValue().set("black_list:" + token, tokenType, exp, TimeUnit.MILLISECONDS);
     }
 }

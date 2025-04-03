@@ -9,6 +9,10 @@ export interface OrderBaseInfo {
   status: string;
 }
 
+export interface PaymentLink {
+  url: string;
+}
+
 export interface Order extends OrderBaseInfo {
   shippingAddress: ShippingAddress;
   productsDto: ProductCart[];

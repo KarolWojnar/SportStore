@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.shop.sportwebstore.model.entity.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -25,10 +24,6 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
     public Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -42,24 +37,6 @@ public class JwtService {
                 .expiration(new Date((new Date()).getTime() + exp))
                 .signWith(getSigningKey())
                 .compact();
-    }
-
-    public String getSubject(String token) {
-        return Jwts.parser()
-                .verifyWith((SecretKey) getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-    }
-
-    public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getSubject(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
     }
 
     public Date extractExpiration(String token) {

@@ -18,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -162,7 +163,7 @@ class CartServiceTest {
         when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
         when(valueOperations.get("cart:" + userId)).thenReturn(cart);
 
-        cartService.deleteAllFromProduct(productId1);
+        cartService.removeAllAmountOfProductFromCart(productId1);
 
         assertFalse(cart.getProducts().containsKey(productId1));
         verify(valueOperations).set("cart:" + userId, cart);
@@ -172,7 +173,7 @@ class CartServiceTest {
     void checkCartProducts_ThrowsExceptionWhenCartEmpty() {
         Cart emptyCart = new Cart(userId);
 
-        assertThrows(ProductException.class, () -> cartService.checkCartProducts(emptyCart, false));
+        assertThrows(ProductException.class, () -> cartService.checkCartProducts(emptyCart));
     }
 
     @Test
@@ -181,7 +182,7 @@ class CartServiceTest {
         cart.addProduct(productId1, 1);
         cart.setOrderProcessing(true);
 
-        assertThrows(ProductException.class, () -> cartService.checkCartProducts(cart, false));
+        assertThrows(ProductException.class, () -> cartService.checkCartProducts(cart));
     }
 
     @Test
@@ -195,7 +196,7 @@ class CartServiceTest {
 
         when(productRepository.findAllById(Set.of(productId1))).thenReturn(List.of(product));
 
-        assertThrows(ProductException.class, () -> cartService.checkCartProducts(cart, false));
+        assertThrows(ProductException.class, () -> cartService.checkCartProducts(cart));
     }
 
     @Test
@@ -207,17 +208,17 @@ class CartServiceTest {
 
         Product product1 = new Product();
         product1.setId(productId1);
-        product1.setPrice(10.0);
+        product1.setPrice(BigDecimal.valueOf(10.0));
 
         Product product2 = new Product();
         product2.setId(productId2);
-        product2.setPrice(5.0);
+        product2.setPrice(BigDecimal.valueOf(10.0));
 
         when(productRepository.findAllById(Set.of(productId1, productId2))).thenReturn(List.of(product1, product2));
 
-        double total = cartService.calculateTotalPrice(cart);
+        BigDecimal total = cartService.calculateTotalPrice(cart);
 
-        assertEquals(25.0, total);
+        assertEquals(BigDecimal.valueOf(25.0), total);
     }
 
     @Test

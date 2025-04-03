@@ -10,22 +10,26 @@ import org.shop.sportwebstore.model.OrderStatus;
 import org.shop.sportwebstore.model.ProductInOrder;
 import org.shop.sportwebstore.model.dto.OrderBaseDto;
 import org.shop.sportwebstore.model.dto.OrderDto;
-import org.shop.sportwebstore.model.dto.OrderProductDto;
+import org.shop.sportwebstore.model.dto.OrderMapper;
 import org.shop.sportwebstore.model.entity.*;
 import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.OrderRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
 import org.shop.sportwebstore.repository.UserRepository;
 import org.shop.sportwebstore.service.user.EmailService;
-import org.springframework.data.domain.Page;
+import org.shop.sportwebstore.service.user.SecurityContextWrapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -39,23 +43,29 @@ public class OrderService {
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final OrderMapper orderMapper;
+    private final SecurityContextWrapper securityContextWrapper;
 
-    public String createOrder(Cart cart, Customer customer, double totalPrice, SessionCreateParams.PaymentMethodType paymentMethod) {
+    public String createOrder(Cart cart, Customer customer, BigDecimal totalPrice, SessionCreateParams.PaymentMethodType paymentMethod) {
         List<ProductInOrder> productInOrder = cart.getProducts().entrySet().stream()
-                .map(entry -> new ProductInOrder(
-                        entry.getKey(),
-                        entry.getValue(),
-                        productRepository.findByIdAndAvailableTrue(entry.getKey()).isPresent() ?
-                                productRepository.findByIdAndAvailableTrue(entry.getKey()).get().getPrice() : 0.0
-                ))
-                .collect(Collectors.toList());
+                .map(entry -> {
+                    Optional<Product> product = productRepository.findByIdAndAvailableTrue(entry.getKey());
+                    BigDecimal price = product.map(Product::getPrice)
+                            .orElse(BigDecimal.ZERO);
+                        return new ProductInOrder(
+                            entry.getKey(),
+                            entry.getValue(),
+                            price
+                        );
+                    }).collect(Collectors.toList());
+
         Order order = orderRepository.save(new Order(
-                productInOrder,
-                customer.getUserId(),
-                customer.getShippingAddress(),
-                Math.round(totalPrice) / 100.0,
-                paymentMethod.name()
-            )
+                        productInOrder,
+                        customer.getUserId(),
+                        customer.getShippingAddress(),
+                        totalPrice.divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP),
+                        paymentMethod.name()
+                )
         );
         return order.getId();
     }
@@ -80,32 +90,22 @@ public class OrderService {
     }
 
     public List<OrderBaseDto> getUserOrders() {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new UserException("User not found."));
         return orderRepository.findAllByUserId(user.getId()).stream().map(OrderBaseDto::mapToDto).toList();
     }
 
     public OrderDto getOrderById(String id) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new UserException("User not found."));
-        Order order = orderRepository.findByIdAndUserId(id, user.getId()).orElseThrow(() -> new PaymentException("Order not found."));
-        Customer customer = customerRepository.findByUserId(user.getId()).orElseThrow(() -> new UserException("Customer not found."));
+        Order order = orderRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(() -> new PaymentException("Order not found."));
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new UserException("Customer not found."));
         List<String> productIds = order.getProducts().stream().map(ProductInOrder::getProductId).toList();
         List<Product> products = productRepository.findAllById(productIds);
         List<ProductInOrder> productsInOrder = order.getProducts();
-        return OrderDto.builder()
-                .id(order.getId())
-                .firstName(customer.getFirstName())
-                .lastName(customer.getLastName())
-                .email(user.getEmail())
-                .status(order.getStatus())
-                .paymentMethod(SessionCreateParams.PaymentMethodType.valueOf(order.getPaymentMethod()))
-                .shippingAddress(order.getOrderAddress())
-                .totalPrice(order.getTotalPrice())
-                .deliveryDate(order.getDeliveryDate())
-                .orderDate(order.getOrderDate())
-                .productsDto(OrderProductDto.mapToDto(productsInOrder, products))
-                .build();
+        return orderMapper.mapToOrderDto(order, customer, user, products, productsInOrder);
     }
 
     @Transactional
@@ -117,18 +117,22 @@ public class OrderService {
     }
 
     public void setOrderProductAsRated(String orderId, String productId) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new ProductException("User not found."));
         Order order = orderRepository.findByIdAndUserId(orderId, user.getId())
                 .orElseThrow(() -> new ProductException("Order not found."));
-        order.getProducts().forEach(product -> {
-            if (product.getProductId().equals(productId)) {
-                if (product.isRated()) {
-                    throw new ProductException("Product already rated.");
-                }
-                product.setRated(true);
-            }
-        });
+        order.getProducts().stream()
+                .filter(product -> product.getProductId().equals(productId))
+                .findFirst()
+                .ifPresentOrElse(product -> {
+                    if (product.isRated()) {
+                        throw new ProductException("Product already rated.");
+                    }
+                    product.setRated(true);
+                }, () -> {
+                    throw new ProductException("Product not found in order.");
+                });
+
         orderRepository.save(order);
     }
 
@@ -144,13 +148,10 @@ public class OrderService {
 
     public List<OrderBaseDto> getOrders(int page, int size, String status) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Order> orders;
         if (status == null || status.isEmpty()) {
-            orders = orderRepository.findAll(pageable);
-        } else {
-            orders = orderRepository.findAllByStatus(OrderStatus.valueOf(status), pageable);
+            return orderRepository.findAll(pageable).map(OrderBaseDto::mapToDto).toList();
         }
-        return orders.stream().map(OrderBaseDto::mapToDto).toList();
+        return orderRepository.findAllByStatus(OrderStatus.valueOf(status), pageable).stream().map(OrderBaseDto::mapToDto).toList();
     }
 
     public void cancelOrder(String id, boolean isAdmin) {
@@ -169,15 +170,17 @@ public class OrderService {
     }
 
     public Order findOrderByUserAndId(String id) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new UserException("User not found."));
         return orderRepository.findByIdAndUserId(id, user.getId()).orElseThrow(() -> new PaymentException("Order not found."));
     }
 
     public void refundOrder(String id) {
         Order order = findOrderByUserAndId(id);
+        Instant fourteenDaysAgo = Instant.now().minus(14, ChronoUnit.DAYS);
+        Date refundDeadline = Date.from(fourteenDaysAgo);
 
-        if (order.getOrderDate().before(new Date(System.currentTimeMillis() - 1209600000))) {
+        if (order.getOrderDate().before(refundDeadline)) {
             throw new PaymentException("Order date is more than 14 days ago.");
         }
         if (order.getStatus() != OrderStatus.DELIVERED) {

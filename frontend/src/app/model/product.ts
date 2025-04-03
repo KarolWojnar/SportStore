@@ -53,3 +53,7 @@ export interface NewProduct {
   categories: string[];
 }
 
+export interface CategoryNew {
+  name: string;
+}
+

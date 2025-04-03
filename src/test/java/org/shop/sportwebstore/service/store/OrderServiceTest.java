@@ -18,6 +18,8 @@ import org.shop.sportwebstore.repository.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.math.BigDecimal;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -93,7 +95,7 @@ class OrderServiceTest {
     @Test
     void setOrderProductAsRated_ShouldMarkProductAsRated() {
         Order order = new Order();
-        order.setProducts(new ArrayList<>(List.of(new ProductInOrder(productId, 1, 10.0))));
+        order.setProducts(new ArrayList<>(List.of(new ProductInOrder(productId, 1, BigDecimal.valueOf(10.0)))));
 
         when(orderRepository.findByIdAndUserId(orderId, userId)).thenReturn(Optional.of(order));
 
@@ -105,7 +107,7 @@ class OrderServiceTest {
 
     @Test
     void setOrderProductAsRated_ShouldThrowWhenAlreadyRated() {
-        ProductInOrder productInOrder = new ProductInOrder(productId, 1, 10.0);
+        ProductInOrder productInOrder = new ProductInOrder(productId, 1, BigDecimal.valueOf(10.0));
         productInOrder.setRated(true);
 
         Order order = new Order();
@@ -127,9 +129,9 @@ class OrderServiceTest {
 
         Order order = new Order();
         order.setId(orderId);
-        order.setProducts(new ArrayList<>(List.of(new ProductInOrder(productId, 1, 10.0))));
+        order.setProducts(new ArrayList<>(List.of(new ProductInOrder(productId, 1, BigDecimal.valueOf(10.0)))));
         order.setOrderAddress(new ShippingAddress("Street", "City", "12345", "Country"));
-        order.setTotalPrice(10.0);
+        order.setTotalPrice(new BigDecimal("10.0"));
         order.setPaymentMethod("CARD");
 
         Product product = new Product();

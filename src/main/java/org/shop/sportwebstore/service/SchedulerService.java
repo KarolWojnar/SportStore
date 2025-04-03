@@ -13,6 +13,7 @@ import org.shop.sportwebstore.service.store.CartService;
 import org.shop.sportwebstore.service.store.OrderService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -50,6 +51,7 @@ public class SchedulerService {
     }
 
     @Scheduled(cron = "0 */15 * * * *")
+    @Transactional
     public void clearExpiredOrderCart() {
         List<Cart> carts = cartService.findCartsByIsOrderProcessing(true, Date.from(Instant.now()));
         carts.forEach(cart -> {
@@ -70,7 +72,6 @@ public class SchedulerService {
             if (order.getStatus() == OrderStatus.DELIVERED && !order.isEmailSent()) {
                 orderService.sendOrderDeliveredEmail(order);
                 order.setEmailSent(true);
-                orderRepository.save(order);
             }
         }
         log.info("Changed {} orders status. date: {}", orders.size(),

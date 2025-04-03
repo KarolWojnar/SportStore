@@ -3,12 +3,14 @@ package org.shop.sportwebstore.model.dto;
 import lombok.Data;
 import org.shop.sportwebstore.model.entity.Product;
 
+import java.math.BigDecimal;
+
 @Data
 public class ProductCart {
     private String productId;
     private String name;
     private String image;
-    private double price;
+    private BigDecimal price;
     private int quantity;
     private int totalQuantity;
 

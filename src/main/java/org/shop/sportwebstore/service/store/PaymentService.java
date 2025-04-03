@@ -12,6 +12,7 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.shop.sportwebstore.exception.ProductException;
 import org.shop.sportwebstore.exception.UserException;
 import org.shop.sportwebstore.model.DeliveryTime;
@@ -24,28 +25,29 @@ import org.shop.sportwebstore.model.entity.Product;
 import org.shop.sportwebstore.model.entity.User;
 import org.shop.sportwebstore.repository.CustomerRepository;
 import org.shop.sportwebstore.repository.ProductRepository;
-import org.shop.sportwebstore.repository.UserRepository;
+import org.shop.sportwebstore.service.ConstantStrings;
+import org.shop.sportwebstore.service.user.SecurityContextWrapper;
 import org.shop.sportwebstore.service.user.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
-    private final UserRepository userRepository;
     private final CartService cartService;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
     private final OrderService orderService;
+    private final SecurityContextWrapper securityContextWrapper;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     @Value("${spring.stripe.secret}")
     private String stripeSecretKey;
@@ -60,10 +62,17 @@ public class PaymentService {
     public String createPayment(OrderDto orderDto) {
         Customer customer = userService.findOrCreateCustomer(orderDto);
         Cart cart = cartService.getCart(customer.getUserId());
-        double shippingPrice = orderDto.getDeliveryTime().equals(DeliveryTime.STANDARD) ? 0.0 : 10.0;
-        double totalPrice = ((cartService.calculateTotalPrice(cart) + shippingPrice)) * 100;
+        BigDecimal shippingPrice = orderDto.getDeliveryTime().equals(DeliveryTime.STANDARD)
+                ? ConstantStrings.STANDARD_SHIPPING
+                : ConstantStrings.EXPRESS_SHIPPING;
+
+        BigDecimal cartTotal = cartService.calculateTotalPrice(cart);
+        BigDecimal totalPrice = cartTotal.add(shippingPrice)
+                .multiply(new BigDecimal("100"))
+                .setScale(0, RoundingMode.HALF_UP);
+
         String orderId = orderService.createOrder(cart, customer, totalPrice, orderDto.getPaymentMethod());
-        String url = preparePaymentTemplate(orderDto, (long) (totalPrice), orderId);
+        String url = preparePaymentTemplate(orderDto, totalPrice.longValueExact(), orderId);
         log.info("Start payment for {}", customer.getUserId());
         cartService.deleteCart(customer.getUserId());
         return url;
@@ -72,12 +81,30 @@ public class PaymentService {
     @Transactional
     public String createRepayment(String orderId) {
         OrderDto orderDto = orderService.getOrderById(orderId);
-        return preparePaymentTemplate(orderDto, (long) (orderDto.getTotalPrice() * 100), orderId);
+        BigDecimal totalPriceInCents = orderDto.getTotalPrice()
+                .multiply(new BigDecimal("100"))
+                .setScale(0, RoundingMode.HALF_UP);
+        return preparePaymentTemplate(orderDto, totalPriceInCents.longValueExact(), orderId);
     }
 
     private String preparePaymentTemplate(OrderDto orderDto, long totalPrice, String orderId) {
         Stripe.apiKey = stripeSecretKey;
         try {
+            var productData = com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                            .setName("SportWebStore")
+                            .build();
+
+            var priceData = com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData.builder()
+                            .setCurrency("eur")
+                            .setUnitAmount(totalPrice)
+                            .setProductData(productData)
+                            .build();
+
+            var items = com.stripe.param.checkout.SessionCreateParams.LineItem.builder()
+                            .setQuantity(1L)
+                            .setPriceData(priceData)
+                            .build();
+
             com.stripe.param.checkout.SessionCreateParams sessionCreateParams =
                     com.stripe.param.checkout.SessionCreateParams.builder()
                             .setMode(com.stripe.param.checkout.SessionCreateParams.Mode.PAYMENT)
@@ -85,22 +112,7 @@ public class PaymentService {
                             .setCustomerEmail(orderDto.getEmail())
                             .setSuccessUrl(frontUrl + "order?paid=true&orderId=" + orderId)
                             .setCancelUrl(frontUrl + "order?paid=false&orderId=" + orderId)
-                            .addLineItem(
-                                    com.stripe.param.checkout.SessionCreateParams.LineItem.builder()
-                                            .setQuantity(1L)
-                                            .setPriceData(
-                                                    com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData.builder()
-                                                            .setCurrency("eur")
-                                                            .setUnitAmount(totalPrice)
-                                                            .setProductData(
-                                                                    com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                            .setName("SportWebStore")
-                                                                            .build()
-                                                            )
-                                                            .build()
-                                            )
-                                            .build()
-                            )
+                            .addLineItem(items)
                             .build();
 
             Session session = com.stripe.model.checkout.Session.create(sessionCreateParams);
@@ -113,7 +125,7 @@ public class PaymentService {
 
     @Transactional(rollbackFor = ProductException.class)
     public OrderDto getSummary() {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new RuntimeException("User not found."));
         Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
         String name = null;
@@ -126,10 +138,10 @@ public class PaymentService {
         }
 
         Cart cart = cartService.getCart(user.getId());
+        List<Product> products = cartService.checkCartProducts(cart);
+        cartService.blockAmountItem(cart, products);
 
-        cartService.checkCartProducts(cart, true);
-
-        double totalPrice = cartService.calculateTotalPrice(cart);
+        BigDecimal totalPrice = cartService.calculateTotalPrice(cart);
         return OrderDto.builder()
                 .firstName(name)
                 .lastName(lastName)
@@ -140,7 +152,7 @@ public class PaymentService {
     }
 
     public void cancelPayment() {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+        User user = securityContextWrapper.getCurrentUser()
                 .orElseThrow(() -> new RuntimeException("User not found."));
         Cart cart = cartService.getCart(user.getId());
         List<Product> products = productRepository.findAllById(cart.getProducts().keySet());
@@ -154,13 +166,10 @@ public class PaymentService {
 
                 String rawJson = event.getDataObjectDeserializer().getRawJson();
 
-                ObjectMapper mapper = new ObjectMapper()
-                        .registerModule(new ParameterNamesModule())
+                String sessionId = objectMapper.registerModule(new ParameterNamesModule())
                         .registerModule(new JavaTimeModule())
-                        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-
-                String sessionId = mapper.readTree(rawJson).get("id").asText();
-
+                        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+                        .readTree(rawJson).get("id").asText();
 
                 orderService.updateOrderStatusBySessionId(sessionId, OrderStatus.PROCESSING);
             }

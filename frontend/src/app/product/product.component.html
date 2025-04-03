@@ -38,10 +38,10 @@
   <div class="row my-3">
     <div class="col-md-9">
       <button *ngFor="let category of allCategories"
-              [ngClass]="['btn btn-sm rounded-2', selectedCategories.includes(category) ? 'btn-info' : 'btn-outline-secondary']"
+              [ngClass]="['btn btn-sm rounded-2', selectedCategories.includes(category.name) ? 'btn-info' : 'btn-outline-secondary']"
               style="margin: 2px"
-              (click)="filterByCategory(category)">
-        {{ category }}
+              (click)="filterByCategory(category.name)">
+        {{ category.name }}
       </button>
       <button *ngIf="selectedCategories.length > 0"
               class="btn btn-outline-danger btn-sm rounded-2"

@@ -1,13 +1,6 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  ViewChild,
-  ElementRef,
-  OnDestroy
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AdminService } from '../../service/admin.service';
-import { UserDetails } from '../../model/user-dto';
+import { UserDetails, UserRole, UserStatus } from '../../model/user-dto';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -168,7 +161,8 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.adminService.setActivationUser(id, enabled).subscribe({
+        const userStatus: UserStatus = { userStatus: enabled };
+        this.adminService.setActivationUser(id, userStatus).subscribe({
           next: () => {
             this.users = this.users.map(user => {
               if (user.id === id) {
@@ -195,7 +189,7 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.adminService.setRole(id, 'ROLE_ADMIN').subscribe({
+        this.adminService.setRole(id, UserRole.ROLE_ADMIN).subscribe({
           next: () => {
             this.users = this.users.map(user => {
               if (user.id === id) {
