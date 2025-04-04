@@ -64,7 +64,6 @@ Monolithic e-commerce application with payment processing via Stripe.
 ```
 
 ## Installation & Setup
-
 ### Prerequisites
 - Docker 20.10+
 - Docker Compose 2.0+
